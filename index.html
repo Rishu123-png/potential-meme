@@ -1,54 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>School Attendance System</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="container">
+    <h1>📘 School Attendance System</h1>
 
-  <h1>🎓 School Attendance System</h1>
+    <div class="login-section">
+      <h2>Teacher Login</h2>
+      <input type="text" id="teacherName" placeholder="Enter Teacher Name" />
+      <input type="password" id="teacherPassword" placeholder="Enter Password" />
+      <button id="loginBtn">Login</button>
+    </div>
 
-  <!-- ===== LOGIN SECTION ===== -->
-  <section id="login-section">
-    <h2>Teacher Login</h2>
-    <input type="text" id="username" placeholder="Enter Username">
-    <input type="password" id="password" placeholder="Enter Password">
-    <button onclick="loginTeacher()">Login</button>
-  </section>
+    <div class="attendance-section" style="display: none;">
+      <h2>Mark Attendance</h2>
+      <p id="teacherInfo"></p>
 
-  <!-- ===== ATTENDANCE SECTION ===== -->
-  <section id="attendance-section" style="display: none;">
-    <h2>Welcome, Teacher!</h2>
-    <p>Subject: <span id="teacher-subject"></span></p>
-    <div id="students-list"></div>
-  </section>
+      <select id="classSelect">
+        <option value="">Select Class</option>
+        <option value="11A">Class 11A</option>
+        <option value="11B">Class 11B</option>
+        <option value="12A">Class 12A</option>
+        <option value="12B">Class 12B</option>
+      </select>
 
-  <!-- ===== SCRIPTS ===== -->
-  <script src="students.js"></script>
+      <select id="subjectSelect">
+        <option value="">Select Subject</option>
+        <option value="Maths">Maths</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Physics">Physics</option>
+        <option value="English">English</option>
+      </select>
+
+      <div id="studentsList"></div>
+      <button id="submitAttendance">Submit Attendance</button>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 
-  <!-- ===== FIREBASE SETUP ===== -->
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"></script>
+  <!-- 🔥 Firebase Connection -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
 
-  <!-- Firebase Config (Replace with your real details) -->
-  <script>
+    // Your Firebase configuration
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyBSWzs19870cWmGxd9-kJsKOOs755jyuU0",
+      authDomain: "school-attendence-system-9090.firebaseapp.com",
+      projectId: "school-attendence-system-9090",
+      storageBucket: "school-attendence-system-9090.firebasestorage.app",
+      messagingSenderId: "728832169882",
+      appId: "1:728832169882:web:b335869779e73ab8c20c23"
     };
 
     // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    console.log("✅ Firebase connected successfully!");
   </script>
-
 </body>
 </html>
