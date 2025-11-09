@@ -1,108 +1,103 @@
-// Import Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { app } from "./firebase.js";
 
-// Your Firebase configuration (use your own)
-const firebaseConfig = {
-  apiKey: "AIzaSyBSWzs19870cWmGxd9-kJsKOOs755jyuU0",
-  authDomain: "school-attendence-system-9090.firebaseapp.com",
-  projectId: "school-attendence-system-9090",
-  storageBucket: "school-attendence-system-9090.firebasestorage.app",
-  messagingSenderId: "728832169882",
-  appId: "1:728832169882:web:b335869779e73ab8c20c23",
-  databaseURL: "https://school-attendence-system-9090-default-rtdb.asia-southeast1.firebasedatabase.app/"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Firebase Database
 const db = getDatabase(app);
 
-// DOM elements
-const loginBtn = document.getElementById("login-btn");
-const loginPage = document.getElementById("login-page");
-const attendancePage = document.getElementById("attendance-page");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-const saveBtn = document.getElementById("save-attendance");
-const viewBtn = document.getElementById("view-attendance");
+// LOGIN SECTION
+const loginBtn = document.getElementById("loginBtn");
+const loginContainer = document.getElementById("login-container");
+const attendanceContainer = document.getElementById("attendance-container");
+const loginMessage = document.getElementById("loginMessage");
+const teacherNameSpan = document.getElementById("teacherName");
 
-// Simple login for testing
+// DUMMY LOGIN (You can link real teacher data later)
+const validUsers = {
+  teacher: "12345",
+  admin: "admin123"
+};
+
 loginBtn.addEventListener("click", () => {
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value.trim();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  if (username === "teacher" && password === "12345") {
-    loginPage.style.display = "none";
-    attendancePage.style.display = "block";
+  if (validUsers[username] && validUsers[username] === password) {
+    loginMessage.textContent = "Login successful!";
+    loginContainer.style.display = "none";
+    attendanceContainer.style.display = "block";
+    teacherNameSpan.textContent = username;
   } else {
-    alert("Invalid login. Use username: teacher, password: 12345");
+    loginMessage.textContent = "Invalid username or password!";
   }
 });
 
-// Save attendance record
-saveBtn.addEventListener("click", async () => {
-  const className = document.getElementById("class-select").value;
-  const subjectName = document.getElementById("subject-select").value;
-  const studentName = document.getElementById("student-name").value.trim();
-  const status = document.querySelector("input[name='status']:checked")?.value;
+// LOGOUT
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  attendanceContainer.style.display = "none";
+  loginContainer.style.display = "block";
+});
 
-  if (!className || !subjectName || !studentName || !status) {
-    alert("⚠️ Please fill all details before saving!");
+// SAVE ATTENDANCE
+const saveBtn = document.getElementById("saveAttendanceBtn");
+saveBtn.addEventListener("click", () => {
+  const className = document.getElementById("classSelect").value;
+  const subject = document.getElementById("subjectSelect").value;
+  const studentName = document.getElementById("studentName").value.trim();
+  const status = document.getElementById("attendanceStatus").value;
+  const saveMessage = document.getElementById("saveMessage");
+
+  if (!className || !subject || !studentName) {
+    saveMessage.textContent = "⚠️ Please fill all fields!";
     return;
   }
 
-  try {
-    await push(ref(db, "attendance/"), {
-      className,
-      subjectName,
-      studentName,
-      status,
-      timestamp: new Date().toISOString()
+  const attendanceRef = ref(db, "attendance");
+  const newRecord = {
+    className,
+    subject,
+    studentName,
+    status,
+    date: new Date().toLocaleString(),
+  };
+
+  push(attendanceRef, newRecord)
+    .then(() => {
+      saveMessage.textContent = "✅ Attendance saved successfully!";
+      document.getElementById("studentName").value = "";
+    })
+    .catch((error) => {
+      console.error("Error saving attendance:", error);
+      saveMessage.textContent = "❌ Failed to save attendance!";
     });
-    alert("✅ Attendance saved successfully!");
-    document.getElementById("student-name").value = "";
-    document.querySelectorAll("input[name='status']").forEach(r => r.checked = false);
-  } catch (error) {
-    console.error(error);
-    alert("❌ Failed to save attendance!");
-  }
 });
 
-// View attendance history (table)
-viewBtn.addEventListener("click", async () => {
-  const className = document.getElementById("class-select").value;
-  if (!className) {
-    alert("Please select a class first!");
-    return;
-  }
+// VIEW ATTENDANCE HISTORY
+const viewHistoryBtn = document.getElementById("viewHistoryBtn");
+const historyBody = document.getElementById("historyBody");
 
-  const snapshot = await get(ref(db, "attendance/"));
-  const historySection = document.getElementById("attendance-history");
-  const tableBody = document.querySelector("#history-table tbody");
-  tableBody.innerHTML = "";
+viewHistoryBtn.addEventListener("click", () => {
+  historyBody.innerHTML = ""; // clear old data
+  const attendanceRef = ref(db, "attendance");
 
-  if (snapshot.exists()) {
-    const records = Object.values(snapshot.val()).filter(r => r.className === className);
-    if (records.length === 0) {
-      alert(`No records found for class ${className}`);
-      historySection.style.display = "none";
-      return;
-    }
-
-    records.forEach(r => {
+  onValue(attendanceRef, (snapshot) => {
+    historyBody.innerHTML = "";
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      Object.values(data).forEach((record) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${record.date}</td>
+          <td>${record.className}</td>
+          <td>${record.subject}</td>
+          <td>${record.studentName}</td>
+          <td>${record.status}</td>
+        `;
+        historyBody.appendChild(row);
+      });
+    } else {
       const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${r.className}</td>
-        <td>${r.subjectName}</td>
-        <td>${r.studentName}</td>
-        <td>${r.status}</td>
-        <td>${new Date(r.timestamp).toLocaleString()}</td>
-      `;
-      tableBody.appendChild(row);
-    });
-
-    historySection.style.display = "block";
-  } else {
-    alert("No attendance records found!");
-  }
+      row.innerHTML = `<td colspan="5">No attendance data found</td>`;
+      historyBody.appendChild(row);
+    }
+  });
 });
