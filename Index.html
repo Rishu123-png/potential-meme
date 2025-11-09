@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Attendance Chatbot | Rishu Jaswar</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🎓 Smart Attendance Chatbot System</h1>
+    <p>Created by <b>Rishu Jaswar</b></p>
+  </header>
+
+  <section id="login-section">
+    <h2>Teacher Login</h2>
+    <input type="text" id="teacherName" placeholder="Enter Teacher Name" />
+    <input type="password" id="password" placeholder="Enter Password" />
+    <button onclick="login()">Login</button>
+    <p id="login-error" class="error"></p>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <h2>Welcome, <span id="displayTeacher"></span> 👋</h2>
+    <div class="controls">
+      <label>Select Class:</label>
+      <select id="classSelect">
+        <option value="">-- Select --</option>
+        <option>11A</option>
+        <option>11B</option>
+        <option>11C</option>
+      </select>
+
+      <label>Select Subject:</label>
+      <select id="subjectSelect">
+        <option value="">-- Select --</option>
+        <option>AI</option>
+        <option>CS</option>
+        <option>Data Science</option>
+        <option>Psychology</option>
+        <option>PED</option>
+      </select>
+      <button onclick="loadStudents()">Load Students</button>
+    </div>
+
+    <div id="attendanceSection" class="hidden">
+      <h3>Mark Attendance</h3>
+      <table id="attendanceTable"></table>
+      <button onclick="saveAttendance()">💾 Save Attendance</button>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </section>
+
+  <footer>
+    <p>© 2025 Smart Attendance Chatbot by Rishu Jaswar</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
