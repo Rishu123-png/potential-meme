@@ -7,108 +7,71 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>School Attendance System</h1>
-
-    <!-- 🔹 Login Section -->
-    <div id="loginSection">
-      <h2>Teacher Login</h2>
-      <input type="email" id="email" placeholder="Enter email" />
-      <input type="password" id="password" placeholder="Enter password" />
-      <button id="loginBtn">Login</button>
-      <p id="loginMessage"></p>
-    </div>
-
-    <!-- 🔹 Attendance Section (hidden until login) -->
-    <div id="attendanceSection" style="display:none;">
-      <h2>Mark Attendance</h2>
-
-      <label>Select Class:</label>
-      <select id="classSelect">
-        <option value="">-- Select Class --</option>
-        <option value="11A">11A</option>
-        <option value="11B">11B</option>
-      </select>
-
-      <label>Select Subject:</label>
-      <select id="subjectSelect">
-        <option value="">-- Select Subject --</option>
-        <option value="AI">AI</option>
-        <option value="CS">CS</option>
-        <option value="Data Science">Data Science</option>
-        <option value="Psychology">Psychology</option>
-        <option value="PED">PED</option>
-      </select>
-
-      <div id="studentList"></div>
-      <button id="saveAttendance" style="display:none;">Save Attendance</button>
-
-      <button id="logoutBtn" style="margin-top:20px;">Logout</button>
-    </div>
+  <div id="login-container" class="container">
+    <h1>Teacher Login</h1>
+    <input type="text" id="username" placeholder="Enter username" />
+    <input type="password" id="password" placeholder="Enter password" />
+    <button id="loginBtn">Login</button>
+    <p id="loginMessage"></p>
   </div>
 
-  <!-- 🔹 Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-    import { getDatabase } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+  <div id="attendance-container" class="container" style="display: none;">
+    <h2>Welcome, <span id="teacherName"></span></h2>
+    <label for="classSelect">Select Class:</label>
+    <select id="classSelect">
+      <option value="">-- Select Class --</option>
+      <option value="11A">11A</option>
+      <option value="11B">11B</option>
+      <option value="12A">12A</option>
+      <option value="12B">12B</option>
+    </select>
 
-    // Your Firebase Config (from your console)
-    const firebaseConfig = {
-      apiKey: "AIzaSyBSWzs19870cWmGxd9-kJsKOOs755jyuU0",
-      authDomain: "school-attendence-system-9090.firebaseapp.com",
-      projectId: "school-attendence-system-9090",
-      storageBucket: "school-attendence-system-9090.firebasestorage.app",
-      messagingSenderId: "728832169882",
-      appId: "1:728832169882:web:b335869779e73ab8c20c23"
-    };
+    <label for="subjectSelect">Select Subject:</label>
+    <select id="subjectSelect">
+      <option value="">-- Select Subject --</option>
+      <option value="Physics">Physics</option>
+      <option value="Chemistry">Chemistry</option>
+      <option value="Maths">Maths</option>
+      <option value="English">English</option>
+      <option value="AI">AI</option>
+      <option value="PED">PED</option>
+    </select>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    <h3>Mark Attendance</h3>
+    <input type="text" id="studentName" placeholder="Enter Student Name" />
+    <select id="attendanceStatus">
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+    </select>
+    <button id="saveAttendanceBtn">Save Attendance</button>
+    <p id="saveMessage"></p>
 
-    // Elements
-    const loginSection = document.getElementById("loginSection");
-    const attendanceSection = document.getElementById("attendanceSection");
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const email = document.getElementById("email");
-    const password = document.getElementById("password");
-    const message = document.getElementById("loginMessage");
+    <hr>
+    <button id="viewHistoryBtn">View Attendance History</button>
 
-    // 🔹 Login
-    loginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithEmailAndPassword(auth, email.value, password.value);
-        message.textContent = "Login successful!";
-        loginSection.style.display = "none";
-        attendanceSection.style.display = "block";
-      } catch (error) {
-        message.textContent = "Invalid login details!";
-      }
-    });
+    <div id="attendanceHistory" style="margin-top: 20px;">
+      <h3>Attendance History</h3>
+      <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Class</th>
+            <th>Subject</th>
+            <th>Student Name</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
 
-    // 🔹 Logout
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-      attendanceSection.style.display = "none";
-      loginSection.style.display = "block";
-    });
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-    // 🔹 Auto-check login state
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginSection.style.display = "none";
-        attendanceSection.style.display = "block";
-      } else {
-        loginSection.style.display = "block";
-        attendanceSection.style.display = "none";
-      }
-    });
-  </script>
+  <!-- Firebase SDK -->
+  <script type="module" src="firebase.js"></script>
 
-  <!-- Your main attendance logic -->
-  <script type="module" src="script.js"></script>
+  <!-- Main Script -->
+  <script src="script.js"></script>
 </body>
 </html>
