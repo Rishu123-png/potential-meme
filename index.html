@@ -1,91 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>School Attendance System</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>📘 School Attendance System</h1>
+    <h1>School Attendance System</h1>
 
-    <!-- 🔐 Login Section -->
-    <div class="login-section">
+    <!-- 🔹 Login Section -->
+    <div id="loginSection">
       <h2>Teacher Login</h2>
-      <input type="email" id="teacherName" placeholder="Enter Email">
-      <input type="password" id="teacherPassword" placeholder="Enter Password">
+      <input type="email" id="email" placeholder="Enter email" />
+      <input type="password" id="password" placeholder="Enter password" />
       <button id="loginBtn">Login</button>
+      <p id="loginMessage"></p>
     </div>
 
-    <!-- 🧑‍🏫 Attendance Section -->
-    <div class="attendance-section" style="display: none;">
+    <!-- 🔹 Attendance Section (hidden until login) -->
+    <div id="attendanceSection" style="display:none;">
       <h2>Mark Attendance</h2>
-      <p id="teacherInfo"></p>
 
+      <label>Select Class:</label>
       <select id="classSelect">
-        <option value="">Select Class</option>
-        <option value="11A">Class 11A</option>
-        <option value="11B">Class 11B</option>
-        <option value="12A">Class 12A</option>
-        <option value="12B">Class 12B</option>
+        <option value="">-- Select Class --</option>
+        <option value="11A">11A</option>
+        <option value="11B">11B</option>
       </select>
 
+      <label>Select Subject:</label>
       <select id="subjectSelect">
-        <option value="">Select Subject</option>
-        <option value="Maths">Maths</option>
-        <option value="Chemistry">Chemistry</option>
-        <option value="Physics">Physics</option>
-        <option value="English">English</option>
+        <option value="">-- Select Subject --</option>
         <option value="AI">AI</option>
+        <option value="CS">CS</option>
         <option value="Data Science">Data Science</option>
         <option value="Psychology">Psychology</option>
+        <option value="PED">PED</option>
       </select>
 
-      <div id="studentsList"></div>
-      <button id="submitAttendance">Submit Attendance</button>
+      <div id="studentList"></div>
+      <button id="saveAttendance" style="display:none;">Save Attendance</button>
+
+      <button id="logoutBtn" style="margin-top:20px;">Logout</button>
     </div>
   </div>
 
-  <!-- 🧩 Your JavaScript Files -->
-  <script src="script.js"></script>
-  <script src="students.js"></script>
-
-  <!-- 🔥 Firebase Integration -->
+  <!-- 🔹 Firebase SDKs -->
   <script type="module">
-    import { auth, signInWithEmailAndPassword } from "./firebase.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const loginBtn = document.getElementById("loginBtn");
-      const teacherName = document.getElementById("teacherName");
-      const teacherPassword = document.getElementById("teacherPassword");
-      const attendanceSection = document.querySelector(".attendance-section");
-      const loginSection = document.querySelector(".login-section");
-      const teacherInfo = document.getElementById("teacherInfo");
+    // Your Firebase Config (from your console)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBSWzs19870cWmGxd9-kJsKOOs755jyuU0",
+      authDomain: "school-attendence-system-9090.firebaseapp.com",
+      projectId: "school-attendence-system-9090",
+      storageBucket: "school-attendence-system-9090.firebasestorage.app",
+      messagingSenderId: "728832169882",
+      appId: "1:728832169882:web:b335869779e73ab8c20c23"
+    };
 
-      loginBtn.addEventListener("click", async () => {
-        const email = teacherName.value.trim();
-        const password = teacherPassword.value.trim();
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-        if (!email || !password) {
-          alert("Please enter email and password.");
-          return;
-        }
+    // Elements
+    const loginSection = document.getElementById("loginSection");
+    const attendanceSection = document.getElementById("attendanceSection");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const message = document.getElementById("loginMessage");
 
-        try {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
-          console.log("✅ Logged in:", user.email);
+    // 🔹 Login
+    loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithEmailAndPassword(auth, email.value, password.value);
+        message.textContent = "Login successful!";
+        loginSection.style.display = "none";
+        attendanceSection.style.display = "block";
+      } catch (error) {
+        message.textContent = "Invalid login details!";
+      }
+    });
 
-          loginSection.style.display = "none";
-          attendanceSection.style.display = "block";
-          teacherInfo.innerText = `Welcome, ${user.email}`;
-        } catch (error) {
-          console.error("❌ Login failed:", error.message);
-          alert("Login failed: " + error.message);
-        }
-      });
+    // 🔹 Logout
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+      attendanceSection.style.display = "none";
+      loginSection.style.display = "block";
+    });
+
+    // 🔹 Auto-check login state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginSection.style.display = "none";
+        attendanceSection.style.display = "block";
+      } else {
+        loginSection.style.display = "block";
+        attendanceSection.style.display = "none";
+      }
     });
   </script>
+
+  <!-- Your main attendance logic -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
