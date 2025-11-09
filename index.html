@@ -12,7 +12,7 @@
 
     <div class="login-section">
       <h2>Teacher Login</h2>
-      <input type="text" id="teacherName" placeholder="Enter Teacher Name" />
+      <input type="email" id="teacherName" placeholder="Enter Email" />
       <input type="password" id="teacherPassword" placeholder="Enter Password" />
       <button id="loginBtn">Login</button>
     </div>
@@ -44,12 +44,13 @@
 
   <script src="script.js"></script>
 
-  <!-- 🔥 Firebase Connection -->
+  <!-- 🔥 Firebase Connection with Authentication -->
   <script type="module">
-    // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js";
 
-    // Your Firebase configuration
+    // ✅ Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBSWzs19870cWmGxd9-kJsKOOs755jyuU0",
       authDomain: "school-attendence-system-9090.firebaseapp.com",
@@ -59,9 +60,42 @@
       appId: "1:728832169882:web:b335869779e73ab8c20c23"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    console.log("✅ Firebase connected successfully!");
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ✅ Wait for page to load
+    window.addEventListener("DOMContentLoaded", () => {
+      const loginBtn = document.getElementById("loginBtn");
+      const teacherName = document.getElementById("teacherName");
+      const teacherPassword = document.getElementById("teacherPassword");
+      const attendanceSection = document.querySelector(".attendance-section");
+      const loginSection = document.querySelector(".login-section");
+      const teacherInfo = document.getElementById("teacherInfo");
+
+      loginBtn.addEventListener("click", async () => {
+        const email = teacherName.value.trim();
+        const password = teacherPassword.value.trim();
+
+        if (!email || !password) {
+          alert("Please enter email and password.");
+          return;
+        }
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          console.log("✅ Logged in:", user.email);
+
+          loginSection.style.display = "none";
+          attendanceSection.style.display = "block";
+          teacherInfo.innerText = `Welcome, ${user.email}`;
+        } catch (error) {
+          console.error("❌ Login failed:", error.message);
+          alert("Login failed: " + error.message);
+        }
+      });
+    });
   </script>
 </body>
 </html>
