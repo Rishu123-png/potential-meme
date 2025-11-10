@@ -7,67 +7,132 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="login-container" class="container">
-    <h1>Teacher Login</h1>
-    <input type="text" id="username" placeholder="Enter username" />
-    <input type="password" id="password" placeholder="Enter password" />
-    <button id="loginBtn">Login</button>
-    <p id="loginMessage"></p>
+
+  <!-- Header -->
+  <header>
+    <h1>School Attendance System</h1>
+  </header>
+
+  <!-- Login Section -->
+  <div id="login-section" class="login-page">
+    <div class="login-box">
+      <h2>👨‍🏫 Teacher Login</h2>
+      <input type="text" id="username" placeholder="Enter username" />
+      <input type="password" id="password" placeholder="Enter password" />
+      <button id="loginBtn">Login</button>
+      <p id="loginMessage"></p>
+    </div>
   </div>
 
-  <div id="attendance-container" class="container" style="display: none;">
-    <h2>Welcome, <span id="teacherName"></span></h2>
-    <label for="classSelect">Select Class:</label>
-    <select id="classSelect">
-      <option value="">-- Select Class --</option>
-      <option value="11A">11A</option>
-      <option value="11B">11B</option>
-      <option value="12A">12A</option>
-      <option value="12B">12B</option>
-    </select>
+  <!-- Main Layout -->
+  <div class="main-layout" id="mainLayout" style="display: none;">
+    
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <h2>Menu</h2>
+      <ul>
+        <li><button id="markAttendanceBtn">📋 Mark Attendance</button></li>
+        <li><button id="historyNavBtn">📜 View History</button></li>
+        <li><button id="themeToggle">🌙 Dark Mode</button></li>
+        <li><button id="logoutBtn">🚪 Logout</button></li>
+      </ul>
+    </nav>
 
-    <label for="subjectSelect">Select Subject:</label>
-    <select id="subjectSelect">
-      <option value="">-- Select Subject --</option>
-      <option value="Physics">Physics</option>
-      <option value="Chemistry">Chemistry</option>
-      <option value="Maths">Maths</option>
-      <option value="English">English</option>
-      <option value="AI">AI</option>
-      <option value="PED">PED</option>
-    </select>
+    <!-- Main Content -->
+    <div id="attendance-container" class="container">
+      <h2>Welcome, <span id="teacherName"></span></h2>
 
-    <h3>Mark Attendance</h3>
-<div id="studentList"></div>
-<button id="saveAttendanceBtn">Save Attendance</button>
-<p id="saveMessage"></p>
+      <!-- Attendance Section -->
+      <div id="attendanceSection">
+        <label for="classSelect">Select Class:</label>
+        <select id="classSelect">
+          <option value="">-- Select Class --</option>
+          <option value="11A">11A</option>
+          <option value="11B">11B</option>
+          <option value="12A">12A</option>
+          <option value="12B">12B</option>
+        </select>
 
-    <hr>
-    <button id="viewHistoryBtn">View Attendance History</button>
+        <label for="subjectSelect">Select Subject:</label>
+        <select id="subjectSelect">
+          <option value="">-- Select Subject --</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Maths">Maths</option>
+          <option value="English">English</option>
+          <option value="AI">AI</option>
+          <option value="PED">PED</option>
+        </select>
 
-    <div id="attendanceHistory" style="margin-top: 20px;">
-      <h3>Attendance History</h3>
-      <table border="1" cellpadding="8" cellspacing="0">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Class</th>
-            <th>Subject</th>
-            <th>Student Name</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
+        <h3>Mark Attendance</h3>
+        <div id="studentList"></div>
+        <button id="saveAttendanceBtn">Save Attendance</button>
+        <p id="saveMessage"></p>
+      </div>
+
+      <!-- History Section -->
+      <div id="attendanceHistory" style="display: none;">
+        <h3>Attendance History</h3>
+        <table border="1" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Student Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
     </div>
-
-    <button id="logoutBtn">Logout</button>
   </div>
 
   <!-- Firebase SDK -->
   <script type="module" src="firebase.js"></script>
-
   <!-- Main Script -->
   <script type="module" src="script.js"></script>
+
+  <!-- UI Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const markBtn = document.getElementById("markAttendanceBtn");
+      const historyBtn = document.getElementById("historyNavBtn");
+      const attendanceSection = document.getElementById("attendanceSection");
+      const historySection = document.getElementById("attendanceHistory");
+      const themeBtn = document.getElementById("themeToggle");
+      const loginPage = document.getElementById("login-section");
+      const mainLayout = document.getElementById("mainLayout");
+      const loginBtn = document.getElementById("loginBtn");
+
+      // Mock Login Logic (replace with your Firebase auth)
+      loginBtn.addEventListener("click", () => {
+        loginPage.style.display = "none";
+        mainLayout.style.display = "flex";
+      });
+
+      // Sidebar navigation
+      markBtn.addEventListener("click", () => {
+        attendanceSection.style.display = "block";
+        historySection.style.display = "none";
+      });
+
+      historyBtn.addEventListener("click", () => {
+        attendanceSection.style.display = "none";
+        historySection.style.display = "block";
+      });
+
+      // Dark Mode Toggle
+      if (themeBtn) {
+        themeBtn.addEventListener("click", () => {
+          document.body.classList.toggle("dark");
+          const dark = document.body.classList.contains("dark");
+          themeBtn.textContent = dark ? "☀️ Light Mode" : "🌙 Dark Mode";
+        });
+      }
+    });
+  </script>
+
 </body>
 </html>
