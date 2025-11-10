@@ -1,134 +1,176 @@
-/* Global Styles */
+/* 🌟 General Styles */
 body {
-  font-family: 'Open Sans', sans-serif;
-  background-color: #f4f7fa;
-  color: #333;
+  font-family: "Poppins", sans-serif;
   margin: 0;
+  background: #f4f7fa;
+  color: #333;
+  transition: background 0.4s, color 0.4s;
+}
+
+/* 🌙 Dark Mode */
+body.dark {
+  background: #1e1e2f;
+  color: #e5e5e5;
+}
+
+/* Header */
+header {
+  background: linear-gradient(90deg, #004aad, #007bff);
+  color: white;
+  text-align: center;
+  padding: 1.2rem 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ✨ Login Page */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+  background: linear-gradient(120deg, #004aad, #00c6ff);
+}
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  width: 350px;
+  text-align: center;
+}
+.login-box h2 {
+  margin-bottom: 20px;
+  color: #004aad;
+}
+.login-box input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.login-box button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.login-box button:hover {
+  background: #0056b3;
+}
+body.dark .login-box {
+  background: #2a2a3c;
+  color: white;
+}
+
+/* 🧭 Layout */
+.main-layout {
+  display: flex;
+}
+
+/* Sidebar */
+#sidebar {
+  width: 220px;
+  background: #004aad;
+  color: white;
+  height: 100vh;
+  padding: 20px;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+}
+#sidebar h2 {
+  text-align: center;
+  font-size: 1.3rem;
+}
+#sidebar ul {
+  list-style: none;
   padding: 0;
 }
-
-h1, h2, h3 {
-  color: #004080;
+#sidebar li {
+  margin: 15px 0;
+}
+#sidebar button {
+  width: 100%;
+  background: #007bff;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#sidebar button:hover {
+  background: #0056b3;
 }
 
+/* Container */
 .container {
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 20px 30px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-grow: 1;
+  background: white;
+  margin: 20px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+body.dark .container {
+  background: #2a2a3c;
 }
 
-/* Login Form */
-#login-container input {
+/* Inputs & Buttons */
+input, select, button {
   display: block;
   width: 100%;
+  padding: 10px;
   margin: 12px 0;
-  padding: 10px 12px;
-  font-size: 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  box-sizing: border-box;
+  font-size: 1rem;
 }
-
-#login-container button {
-  background-color: #007bff;
+button {
+  background: #007bff;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-size: 16px;
   cursor: pointer;
-  margin-top: 10px;
-  width: 100%;
-}
-
-#login-container button:hover {
-  background-color: #0056b3;
-}
-
-#loginMessage {
-  margin-top: 10px;
-  color: red;
-  font-weight: bold;
-}
-
-/* Attendance Section */
-#attendance-container label {
-  display: block;
-  margin-top: 15px;
   font-weight: 600;
 }
-
-#attendance-container select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  margin-top: 5px;
-  font-size: 16px;
+button:hover {
+  background: #0056b3;
 }
 
-#saveAttendanceBtn, #viewHistoryBtn, #logoutBtn {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 15px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 15px;
-}
-
-#saveAttendanceBtn:hover, #viewHistoryBtn:hover, #logoutBtn:hover {
-  background-color: #218838;
-}
-
-/* Student List */
-#studentList {
-  margin-top: 15px;
-}
-
-#studentList label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-/* Attendance History Table */
-#attendanceHistory table {
+/* Tables */
+table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: 10px;
 }
-
-#attendanceHistory th, #attendanceHistory td {
-  padding: 10px;
+th, td {
   border: 1px solid #ddd;
+  padding: 10px;
   text-align: left;
 }
-
-#attendanceHistory th {
-  background-color: #007bff;
+th {
+  background: #007bff;
   color: white;
 }
-
-#attendanceHistory tr:nth-child(even) {
-  background-color: #f2f2f2;
+body.dark th {
+  background: #444;
 }
 
-#attendanceHistory tr:hover {
-  background-color: #e6f0ff;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding: 15px 20px;
+  .main-layout {
+    flex-direction: column;
   }
-
-  #attendanceHistory table, #attendanceHistory th, #attendanceHistory td {
-    font-size: 14px;
+  #sidebar {
+    width: 100%;
+    height: auto;
   }
 }
