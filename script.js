@@ -159,15 +159,17 @@ saveBtn.addEventListener("click", () => {
 });
 
 // === VIEW HISTORY ===
-viewHistoryBtn.addEventListener("click", () => {
-  historyBody.innerHTML = "";
+viewHistoryBtn.addEventListener("click", async () => {
   const attendanceRef = ref(db, "attendance");
+  historyBody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
 
   onValue(attendanceRef, (snapshot) => {
     historyBody.innerHTML = "";
     if (snapshot.exists()) {
       const data = snapshot.val();
-      Object.values(data).forEach((r) => {
+      const records = Object.values(data).reverse(); // show latest first
+
+      records.forEach((r) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${r.date}</td>
@@ -179,9 +181,9 @@ viewHistoryBtn.addEventListener("click", () => {
         historyBody.appendChild(row);
       });
     } else {
-      const row = document.createElement("tr");
-      row.innerHTML = `<td colspan="5">No attendance data found</td>`;
-      historyBody.appendChild(row);
+      historyBody.innerHTML = "<tr><td colspan='5'>No attendance data found</td></tr>";
     }
+  }, {
+    onlyOnce: true // fetch one-time instead of continuous
   });
 });
