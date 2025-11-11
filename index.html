@@ -1,105 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>School Attendance System</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>School Attendance — Purple Card</title>
+
+  <!-- Purple Instagram-like card style (unique) -->
+  <style>
+    :root{
+      --bg1: #6a00f4;
+      --bg2: #b76bff;
+      --card-bg: rgba(255,255,255,0.95);
+      --muted: #6b6b7a;
+      --accent: #7f4cff;
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;color:#222}
+    .wrap{width:960px;max-width:96%;display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:center}
+
+    /* left card - auth */
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border-radius:18px;padding:28px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      color:white;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .auth-card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      padding:24px;border-radius:14px;
+    }
+
+    h1{margin:0 0 10px;font-size:20px;letter-spacing:0.4px}
+    p.sub{margin:0 0 18px;color:rgba(255,255,255,0.85)}
+
+    .form-row{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+    input, select, button{
+      width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;
+      outline:none;
+    }
+    input{background:rgba(255,255,255,0.12);color:white}
+    select{background:rgba(255,255,255,0.12);color:white}
+    button.primary{
+      background:linear-gradient(90deg,var(--accent),#b06bff);color:white;font-weight:600;
+      cursor:pointer;box-shadow:0 6px 14px rgba(127,76,255,0.18);
+    }
+    .muted{color:rgba(255,255,255,0.8);font-size:13px}
+    .switch{background:transparent;color:#fff; text-decoration:underline; border:none; cursor:pointer; padding:0;}
+
+    /* right panel - attendance/dashboard */
+    .panel{
+      background:var(--card-bg); color:#0b0b12; padding:22px; border-radius:14px; min-height:420px;
+      box-shadow: 0 6px 18px rgba(10,10,10,0.12);
+    }
+    .panel h2{margin-top:0}
+    .student-row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:#fff;margin-bottom:8px}
+    .student-row span{font-weight:600}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .wrap{grid-template-columns:1fr; padding:18px}
+    }
+  </style>
 </head>
 <body>
+  <div class="wrap">
 
-  <!-- Header -->
-  <header>
-    <h1>School Attendance System</h1>
-  </header>
+    <!-- LEFT: Auth card (Login <-> Sign up toggle) -->
+    <div class="card auth-card">
+      <h1>School Attendance</h1>
+      <p class="sub">Teacher access — sign in or create an account. Secure with Firebase Authentication.</p>
 
-  <!-- Login Section -->
-  <div id="login-container" class="login-page">
-    <div class="login-box">
-      <h2>👨‍🏫 Teacher Login</h2>
-      <input type="text" id="username" placeholder="Enter email" />
-      <input type="password" id="password" placeholder="Enter password" />
-      <button id="loginBtn">Login</button>
-      <p id="loginMessage"></p>
-    </div>
-  </div>
-
-  <!-- Main Layout -->
-  <div class="main-layout" id="attendance-container" style="display: none;">
-    
-    <!-- Sidebar -->
-    <nav id="sidebar">
-      <h2>Menu</h2>
-      <ul>
-        <li><button id="markAttendanceBtn">📋 Mark Attendance</button></li>
-        <li><button id="historyNavBtn">📜 View History</button></li>
-        <li><button id="themeToggle">🌙 Dark Mode</button></li>
-        <li><button id="logoutBtn">🚪 Logout</button></li>
-      </ul>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container">
-      <h2>Welcome, <span id="teacherName"></span></h2>
-
-      <!-- Attendance Section -->
-      <div id="attendanceSection">
-        <label for="classSelect">Select Class:</label>
-        <select id="classSelect">
-          <option value="">-- Select Class --</option>
-          <option value="11A">11A</option>
-          <option value="11B">11B</option>
-          <option value="11C">11C</option>
-          <option value="11D">11D</option>
-          <option value="12A">12A</option>
-          <option value="12B">12B</option>
-          <option value="12C">12C</option>
-          <option value="12D">12D</option>
-        </select>
-
-        <label for="subjectSelect">Select Subject:</label>
-        <select id="subjectSelect">
-          <option value="">-- Select Subject --</option>
-          <option value="Physics">Physics</option>
-          <option value="Chemistry">Chemistry</option>
-          <option value="Maths">Maths</option>
-          <option value="English">English</option>
-          <option value="Biology">Biology</option>
-          <option value="PED">PED</option>
-          <option value="CS">CS</option>
-          <option value="AI">AI</option>
-          <option value="Data science">Data Science</option>
-        </select>
-
-        <h3>Mark Attendance</h3>
-        <div id="studentList"></div>
-        <button id="saveAttendanceBtn">Save Attendance</button>
-        <p id="saveMessage"></p>
+      <!-- LOGIN FORM -->
+      <div id="authLogin">
+        <div class="form-row">
+          <input id="loginEmail" type="email" placeholder="Email" />
+          <input id="loginPassword" type="password" placeholder="Password" />
+        </div>
+        <div style="display:flex;gap:10px">
+          <button id="loginBtn" class="primary">Login</button>
+          <button id="showSignup" class="switch">Create account</button>
+        </div>
+        <p id="authMessage" class="small" style="margin-top:12px"></p>
       </div>
 
-      <!-- History Section -->
-      <div id="attendanceHistory" style="display: none;">
-        <h3>Attendance History</h3>
-        <table border="1" cellpadding="8" cellspacing="0">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Class</th>
-              <th>Subject</th>
-              <th>Student Name</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="historyBody"></tbody>
+      <!-- SIGNUP FORM (hidden initially) -->
+      <div id="authSignup" style="display:none">
+        <div class="form-row">
+          <input id="fullName" type="text" placeholder="Full name" />
+          <input id="signupEmail" type="email" placeholder="Email" />
+          <input id="signupPassword" type="password" placeholder="Password (6+ chars)" />
+        </div>
+
+        <div class="form-row" style="display:flex;gap:8px">
+          <select id="signupClass">
+            <option value="">Select Class</option>
+            <option>11A</option><option>11B</option><option>12A</option><option>12B</option>
+          </select>
+          <select id="signupSubject">
+            <option value="">Select Subject</option>
+            <option>AI</option><option>CS</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Psychology</option><option>PED</option><option>Data Science</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button id="signupBtn" class="primary">Create account</button>
+          <button id="showLogin" class="switch">Have an account? Login</button>
+        </div>
+        <p id="signupMessage" class="small" style="margin-top:10px"></p>
+      </div>
+    </div>
+
+    <!-- RIGHT: Attendance dashboard (shows after login) -->
+    <div class="panel" id="dashboard" style="display:none">
+      <h2 id="welcome">Welcome</h2>
+      <p class="small" id="teacherMeta"></p>
+
+      <div style="margin:12px 0">
+        <label class="small">Class</label>
+        <select id="classSelect"><option value="">--Select--</option><option>11A</option><option>11B</option><option>12A</option><option>12B</option></select>
+      </div>
+
+      <div style="margin:12px 0">
+        <label class="small">Subject</label>
+        <select id="subjectSelect"><option value="">--Select--</option><option>AI</option><option>CS</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Psychology</option><option>PED</option><option>Data Science</option></select>
+      </div>
+
+      <div id="studentListContainer" style="margin-top:12px"></div>
+
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="saveAll" class="primary">Save Attendance</button>
+        <button id="viewHistory" class="primary" style="background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.05)">View History</button>
+        <button id="logoutBtn" style="margin-left:auto;background:transparent;border:none;color:#666">Logout</button>
+      </div>
+
+      <div id="historyContainer" style="margin-top:18px;display:none">
+        <h3 style="margin:0 0 10px">Attendance History</h3>
+        <table class="table" id="historyTable">
+          <thead><tr><th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>By</th></tr></thead>
+          <tbody></tbody>
         </table>
       </div>
     </div>
+
   </div>
 
-  <!-- Firebase SDK -->
-  <script type="module" src="firebase.js"></script>
-  <!-- Main Script -->
+  <!-- load the module script (app logic) -->
   <script type="module" src="script.js"></script>
-
 </body>
 </html>
