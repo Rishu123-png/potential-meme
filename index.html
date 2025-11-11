@@ -7,84 +7,99 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Authentication -->
-  <div id="authContainer" class="auth-card">
-    <!-- Login -->
-    <div id="authLogin" class="auth-box">
-      <h2>Teacher Login</h2>
-      <input type="email" id="loginEmail" placeholder="Email" />
-      <input type="password" id="loginPassword" placeholder="Password" />
+
+  <!-- Header -->
+  <header>
+    <h1>School Attendance System</h1>
+  </header>
+
+  <!-- Login Section -->
+  <div id="login-container" class="login-page">
+    <div class="login-box">
+      <h2>👨‍🏫 Teacher Login</h2>
+      <input type="text" id="username" placeholder="Enter email" />
+      <input type="password" id="password" placeholder="Enter password" />
       <button id="loginBtn">Login</button>
-      <p id="authMessage" class="msg"></p>
-      <p>Don’t have an account? <a href="#" id="showSignup">Create one</a></p>
-    </div>
-
-    <!-- Signup -->
-    <div id="authSignup" class="auth-box" style="display:none;">
-      <h2>Create Teacher Account</h2>
-      <div class="avatar-container">
-        <img id="avatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" />
-        <input type="file" id="avatarUpload" accept="image/*" />
-      </div>
-
-      <input type="text" id="fullName" placeholder="Full Name" />
-      <input type="email" id="signupEmail" placeholder="Email" />
-      <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" />
-      <input type="text" id="signupClass" placeholder="Class you teach (e.g. 10A)" />
-      <input type="text" id="signupSubject" placeholder="Subject you teach (e.g. Math)" />
-      <button id="signupBtn">Create Account</button>
-      <p id="signupMessage" class="msg"></p>
-      <p>Already have an account? <a href="#" id="showLogin">Login here</a></p>
+      <p id="loginMessage"></p>
     </div>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="dashboard" style="display:none;">
-    <header>
-      <div class="teacher-header">
-        <img id="teacherAvatar" class="teacher-avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" />
-        <div>
-          <h1 id="welcome">Welcome</h1>
-          <p id="teacherMeta"></p>
-        </div>
+  <!-- Main Layout -->
+  <div class="main-layout" id="attendance-container" style="display: none;">
+    
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <h2>Menu</h2>
+      <ul>
+        <li><button id="markAttendanceBtn">📋 Mark Attendance</button></li>
+        <li><button id="historyNavBtn">📜 View History</button></li>
+        <li><button id="themeToggle">🌙 Dark Mode</button></li>
+        <li><button id="logoutBtn">🚪 Logout</button></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+      <h2>Welcome, <span id="teacherName"></span></h2>
+
+      <!-- Attendance Section -->
+      <div id="attendanceSection">
+        <label for="classSelect">Select Class:</label>
+        <select id="classSelect">
+          <option value="">-- Select Class --</option>
+          <option value="11A">11A</option>
+          <option value="11B">11B</option>
+          <option value="11C">11C</option>
+          <option value="11D">11D</option>
+          <option value="12A">12A</option>
+          <option value="12B">12B</option>
+          <option value="12C">12C</option>
+          <option value="12D">12D</option>
+        </select>
+
+        <label for="subjectSelect">Select Subject:</label>
+        <select id="subjectSelect">
+          <option value="">-- Select Subject --</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Maths">Maths</option>
+          <option value="English">English</option>
+          <option value="Biology">Biology</option>
+          <option value="PED">PED</option>
+          <option value="CS">CS</option>
+          <option value="AI">AI</option>
+          <option value="Data science">Data Science</option>
+        </select>
+
+        <h3>Mark Attendance</h3>
+        <div id="studentList"></div>
+        <button id="saveAttendanceBtn">Save Attendance</button>
+        <p id="saveMessage"></p>
       </div>
-      <button id="logoutBtn" class="logout">Logout</button>
-    </header>
 
-    <div class="controls">
-      <select id="classSelect">
-        <option value="">Select Class</option>
-        <option value="10A">10A</option>
-        <option value="10B">10B</option>
-        <option value="11A">11A</option>
-      </select>
-      <select id="subjectSelect">
-        <option value="">Select Subject</option>
-        <option value="Math">Math</option>
-        <option value="Science">Science</option>
-        <option value="English">English</option>
-      </select>
-      <button id="saveAll">Save Attendance</button>
-      <button id="viewHistory">View History</button>
-    </div>
-
-    <div id="studentListContainer" class="student-list"></div>
-
-    <div id="historyContainer" style="display:none;">
-      <h3>Attendance History</h3>
-      <table id="historyTable">
-        <thead>
-          <tr>
-            <th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>Teacher</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <!-- History Section -->
+      <div id="attendanceHistory" style="display: none;">
+        <h3>Attendance History</h3>
+        <table border="1" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Student Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
+  <!-- Firebase SDK -->
   <script type="module" src="firebase.js"></script>
-  <script type="module" src="students.js"></script>
+  <!-- Main Script -->
   <script type="module" src="script.js"></script>
+
 </body>
 </html>
