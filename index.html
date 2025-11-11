@@ -5,185 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>School Attendance System</title>
   <link rel="stylesheet" href="style.css" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #8e2de2, #4a00e0);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .auth-container {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      width: 380px;
-      padding: 30px;
-      text-align: center;
-      transition: all 0.4s ease-in-out;
-    }
-
-    h2 {
-      color: #4a00e0;
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 15px;
-    }
-
-    button {
-      background: linear-gradient(135deg, #8e2de2, #4a00e0);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      width: 100%;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: linear-gradient(135deg, #4a00e0, #8e2de2);
-    }
-
-    .toggle-link {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #4a00e0;
-      cursor: pointer;
-      display: block;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    /* Popup Modal */
-    .popup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      visibility: hidden;
-      opacity: 0;
-      transition: all 0.3s ease;
-    }
-
-    .popup.show {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .popup-content {
-      background: #fff;
-      padding: 25px 40px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-      animation: fadeInUp 0.4s ease;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        transform: translateY(40px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .popup-content h3 {
-      color: #4a00e0;
-      margin-bottom: 10px;
-    }
-
-    .popup-content p {
-      font-size: 14px;
-      color: #333;
-    }
-  </style>
 </head>
-
 <body>
-  <div class="auth-container">
-    <h2 id="form-title">Teacher Login</h2>
 
-    <!-- LOGIN FORM -->
-    <div id="login-form">
-      <input type="email" id="login-email" placeholder="Email" required />
-      <input type="password" id="login-password" placeholder="Password" required />
-      <button id="login-btn">Login</button>
-      <span class="toggle-link" id="show-signup">Create an account</span>
+  <!-- Auth Section -->
+  <div id="authContainer" class="auth-card">
+    <!-- Login -->
+    <div id="authLogin" class="auth-box">
+      <h2>Teacher Login</h2>
+      <input type="email" id="loginEmail" placeholder="Email" />
+      <input type="password" id="loginPassword" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <p id="authMessage" class="msg"></p>
+      <p>Don't have an account? <a id="showSignup" href="#">Create one</a></p>
     </div>
 
-    <!-- SIGN UP FORM -->
-    <div id="signup-form" class="hidden">
-      <input type="text" id="signup-name" placeholder="Full Name" required />
-      <input type="email" id="signup-email" placeholder="Email" required />
-      <input type="password" id="signup-password" placeholder="Password" required />
-      <input type="text" id="signup-class" placeholder="Class (e.g. 11A)" required />
-      <input type="text" id="signup-subject" placeholder="Subject (e.g. AI, CS)" required />
-      <button id="signup-btn">Create Account</button>
-      <span class="toggle-link" id="show-login">Already have an account?</span>
+    <!-- Signup -->
+    <div id="authSignup" class="auth-box" style="display:none;">
+      <h2>Create Teacher Account</h2>
+
+      <!-- Avatar upload -->
+      <div class="avatar-container">
+        <img id="avatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" />
+        <input type="file" id="avatarUpload" accept="image/*" />
+      </div>
+
+      <input type="text" id="fullName" placeholder="Full Name" />
+      <input type="email" id="signupEmail" placeholder="Email" />
+      <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" />
+      <input type="text" id="signupClass" placeholder="Class you teach (e.g. 10A)" />
+      <input type="text" id="signupSubject" placeholder="Subject you teach (e.g. Math)" />
+      <button id="signupBtn">Create Account</button>
+      <p id="signupMessage" class="msg"></p>
+      <p>Already have an account? <a id="showLogin" href="#">Login here</a></p>
     </div>
   </div>
 
-  <!-- Popup for Success Message -->
-  <div class="popup" id="success-popup">
-    <div class="popup-content">
-      <h3>✅ Account Created Successfully!</h3>
-      <p>Redirecting you to dashboard...</p>
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard" style="display:none;">
+    <header>
+      <div class="teacher-header">
+        <img id="teacherAvatar" class="teacher-avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" />
+        <div>
+          <h1 id="welcome">Welcome</h1>
+          <p id="teacherMeta"></p>
+        </div>
+      </div>
+      <button id="logoutBtn" class="logout">Logout</button>
+    </header>
+
+    <div class="controls">
+      <select id="classSelect">
+        <option value="">Select Class</option>
+        <option value="10A">10A</option>
+        <option value="10B">10B</option>
+        <option value="11A">11A</option>
+      </select>
+      <select id="subjectSelect">
+        <option value="">Select Subject</option>
+        <option value="Math">Math</option>
+        <option value="Science">Science</option>
+        <option value="English">English</option>
+      </select>
+      <button id="saveAll">Save Attendance</button>
+      <button id="viewHistory">View Attendance History</button>
+    </div>
+
+    <div id="studentListContainer" class="student-list"></div>
+
+    <div id="historyContainer" style="display:none;">
+      <h3>Attendance History</h3>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>Teacher</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 
   <script type="module" src="firebase.js"></script>
-  <script src="script.js"></script>
-
-  <script>
-    // Handle toggle between login & signup
-    const loginForm = document.getElementById("login-form");
-    const signupForm = document.getElementById("signup-form");
-    const formTitle = document.getElementById("form-title");
-    const popup = document.getElementById("success-popup");
-
-    document.getElementById("show-signup").addEventListener("click", () => {
-      loginForm.classList.add("hidden");
-      signupForm.classList.remove("hidden");
-      formTitle.textContent = "Create Teacher Account";
-    });
-
-    document.getElementById("show-login").addEventListener("click", () => {
-      signupForm.classList.add("hidden");
-      loginForm.classList.remove("hidden");
-      formTitle.textContent = "Teacher Login";
-    });
-
-    // Listen for custom event from script.js after successful signup
-    window.addEventListener("signupSuccess", () => {
-      popup.classList.add("show");
-      setTimeout(() => {
-        popup.classList.remove("show");
-        window.location.href = "dashboard.html"; // your attendance page link
-      }, 2000);
-    });
-  </script>
+  <script type="module" src="students.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
