@@ -7,8 +7,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- Auth Section -->
   <div id="authContainer" class="auth-card">
     <!-- Login -->
     <div id="authLogin" class="auth-box">
@@ -17,19 +15,16 @@
       <input type="password" id="loginPassword" placeholder="Password" />
       <button id="loginBtn">Login</button>
       <p id="authMessage" class="msg"></p>
-      <p>Don't have an account? <a id="showSignup" href="#">Create one</a></p>
+      <p>Don’t have an account? <a id="showSignup" href="#">Create one</a></p>
     </div>
 
     <!-- Signup -->
     <div id="authSignup" class="auth-box" style="display:none;">
       <h2>Create Teacher Account</h2>
-
-      <!-- Avatar upload -->
       <div class="avatar-container">
         <img id="avatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" />
         <input type="file" id="avatarUpload" accept="image/*" />
       </div>
-
       <input type="text" id="fullName" placeholder="Full Name" />
       <input type="email" id="signupEmail" placeholder="Email" />
       <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" />
@@ -41,7 +36,6 @@
     </div>
   </div>
 
-  <!-- Dashboard -->
   <div id="dashboard" class="dashboard" style="display:none;">
     <header>
       <div class="teacher-header">
