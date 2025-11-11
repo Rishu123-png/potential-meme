@@ -1,154 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>School Attendance — Purple Card</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Attendance System</title>
+  <link rel="stylesheet" href="style.css" />
 
-  <!-- Purple Instagram-like card style (unique) -->
   <style>
-    :root{
-      --bg1: #6a00f4;
-      --bg2: #b76bff;
-      --card-bg: rgba(255,255,255,0.95);
-      --muted: #6b6b7a;
-      --accent: #7f4cff;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;color:#222}
-    .wrap{width:960px;max-width:96%;display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:center}
-
-    /* left card - auth */
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      border-radius:18px;padding:28px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      color:white;
-      border:1px solid rgba(255,255,255,0.08);
-    }
-    .auth-card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      padding:24px;border-radius:14px;
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #8e2de2, #4a00e0);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    h1{margin:0 0 10px;font-size:20px;letter-spacing:0.4px}
-    p.sub{margin:0 0 18px;color:rgba(255,255,255,0.85)}
-
-    .form-row{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-    input, select, button{
-      width:100%;padding:10px 12px;border-radius:10px;border:none;font-size:14px;
-      outline:none;
+    .auth-container {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 380px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.4s ease-in-out;
     }
-    input{background:rgba(255,255,255,0.12);color:white}
-    select{background:rgba(255,255,255,0.12);color:white}
-    button.primary{
-      background:linear-gradient(90deg,var(--accent),#b06bff);color:white;font-weight:600;
-      cursor:pointer;box-shadow:0 6px 14px rgba(127,76,255,0.18);
-    }
-    .muted{color:rgba(255,255,255,0.8);font-size:13px}
-    .switch{background:transparent;color:#fff; text-decoration:underline; border:none; cursor:pointer; padding:0;}
 
-    /* right panel - attendance/dashboard */
-    .panel{
-      background:var(--card-bg); color:#0b0b12; padding:22px; border-radius:14px; min-height:420px;
-      box-shadow: 0 6px 18px rgba(10,10,10,0.12);
+    h2 {
+      color: #4a00e0;
+      margin-bottom: 20px;
     }
-    .panel h2{margin-top:0}
-    .student-row{display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:8px;background:#fff;margin-bottom:8px}
-    .student-row span{font-weight:600}
-    .table{width:100%;border-collapse:collapse}
-    .table th,.table td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-    .small{font-size:13px;color:var(--muted)}
 
-    /* responsive */
-    @media (max-width:900px){
-      .wrap{grid-template-columns:1fr; padding:18px}
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #8e2de2, #4a00e0);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #4a00e0, #8e2de2);
+    }
+
+    .toggle-link {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #4a00e0;
+      cursor: pointer;
+      display: block;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Popup Modal */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .popup.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .popup-content {
+      background: #fff;
+      padding: 25px 40px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 0.4s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .popup-content h3 {
+      color: #4a00e0;
+      margin-bottom: 10px;
+    }
+
+    .popup-content p {
+      font-size: 14px;
+      color: #333;
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
+  <div class="auth-container">
+    <h2 id="form-title">Teacher Login</h2>
 
-    <!-- LEFT: Auth card (Login <-> Sign up toggle) -->
-    <div class="card auth-card">
-      <h1>School Attendance</h1>
-      <p class="sub">Teacher access — sign in or create an account. Secure with Firebase Authentication.</p>
-
-      <!-- LOGIN FORM -->
-      <div id="authLogin">
-        <div class="form-row">
-          <input id="loginEmail" type="email" placeholder="Email" />
-          <input id="loginPassword" type="password" placeholder="Password" />
-        </div>
-        <div style="display:flex;gap:10px">
-          <button id="loginBtn" class="primary">Login</button>
-          <button id="showSignup" class="switch">Create account</button>
-        </div>
-        <p id="authMessage" class="small" style="margin-top:12px"></p>
-      </div>
-
-      <!-- SIGNUP FORM (hidden initially) -->
-      <div id="authSignup" style="display:none">
-        <div class="form-row">
-          <input id="fullName" type="text" placeholder="Full name" />
-          <input id="signupEmail" type="email" placeholder="Email" />
-          <input id="signupPassword" type="password" placeholder="Password (6+ chars)" />
-        </div>
-
-        <div class="form-row" style="display:flex;gap:8px">
-          <select id="signupClass">
-            <option value="">Select Class</option>
-            <option>11A</option><option>11B</option><option>12A</option><option>12B</option>
-          </select>
-          <select id="signupSubject">
-            <option value="">Select Subject</option>
-            <option>AI</option><option>CS</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Psychology</option><option>PED</option><option>Data Science</option>
-          </select>
-        </div>
-
-        <div style="display:flex;gap:10px">
-          <button id="signupBtn" class="primary">Create account</button>
-          <button id="showLogin" class="switch">Have an account? Login</button>
-        </div>
-        <p id="signupMessage" class="small" style="margin-top:10px"></p>
-      </div>
+    <!-- LOGIN FORM -->
+    <div id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required />
+      <input type="password" id="login-password" placeholder="Password" required />
+      <button id="login-btn">Login</button>
+      <span class="toggle-link" id="show-signup">Create an account</span>
     </div>
 
-    <!-- RIGHT: Attendance dashboard (shows after login) -->
-    <div class="panel" id="dashboard" style="display:none">
-      <h2 id="welcome">Welcome</h2>
-      <p class="small" id="teacherMeta"></p>
-
-      <div style="margin:12px 0">
-        <label class="small">Class</label>
-        <select id="classSelect"><option value="">--Select--</option><option>11A</option><option>11B</option><option>12A</option><option>12B</option></select>
-      </div>
-
-      <div style="margin:12px 0">
-        <label class="small">Subject</label>
-        <select id="subjectSelect"><option value="">--Select--</option><option>AI</option><option>CS</option><option>Maths</option><option>Physics</option><option>Chemistry</option><option>Psychology</option><option>PED</option><option>Data Science</option></select>
-      </div>
-
-      <div id="studentListContainer" style="margin-top:12px"></div>
-
-      <div style="display:flex;gap:10px;margin-top:12px">
-        <button id="saveAll" class="primary">Save Attendance</button>
-        <button id="viewHistory" class="primary" style="background:transparent;color:var(--accent);border:1px solid rgba(0,0,0,0.05)">View History</button>
-        <button id="logoutBtn" style="margin-left:auto;background:transparent;border:none;color:#666">Logout</button>
-      </div>
-
-      <div id="historyContainer" style="margin-top:18px;display:none">
-        <h3 style="margin:0 0 10px">Attendance History</h3>
-        <table class="table" id="historyTable">
-          <thead><tr><th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>By</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+    <!-- SIGN UP FORM -->
+    <div id="signup-form" class="hidden">
+      <input type="text" id="signup-name" placeholder="Full Name" required />
+      <input type="email" id="signup-email" placeholder="Email" required />
+      <input type="password" id="signup-password" placeholder="Password" required />
+      <input type="text" id="signup-class" placeholder="Class (e.g. 11A)" required />
+      <input type="text" id="signup-subject" placeholder="Subject (e.g. AI, CS)" required />
+      <button id="signup-btn">Create Account</button>
+      <span class="toggle-link" id="show-login">Already have an account?</span>
     </div>
-
   </div>
 
-  <!-- load the module script (app logic) -->
-  <script type="module" src="script.js"></script>
+  <!-- Popup for Success Message -->
+  <div class="popup" id="success-popup">
+    <div class="popup-content">
+      <h3>✅ Account Created Successfully!</h3>
+      <p>Redirecting you to dashboard...</p>
+    </div>
+  </div>
+
+  <script type="module" src="firebase.js"></script>
+  <script src="script.js"></script>
+
+  <script>
+    // Handle toggle between login & signup
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const formTitle = document.getElementById("form-title");
+    const popup = document.getElementById("success-popup");
+
+    document.getElementById("show-signup").addEventListener("click", () => {
+      loginForm.classList.add("hidden");
+      signupForm.classList.remove("hidden");
+      formTitle.textContent = "Create Teacher Account";
+    });
+
+    document.getElementById("show-login").addEventListener("click", () => {
+      signupForm.classList.add("hidden");
+      loginForm.classList.remove("hidden");
+      formTitle.textContent = "Teacher Login";
+    });
+
+    // Listen for custom event from script.js after successful signup
+    window.addEventListener("signupSuccess", () => {
+      popup.classList.add("show");
+      setTimeout(() => {
+        popup.classList.remove("show");
+        window.location.href = "dashboard.html"; // your attendance page link
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
