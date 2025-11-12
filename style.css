@@ -1,139 +1,112 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
+/* 🌌 Aesthetic Tech-Themed Style for School Attendance System */
 
-:root {
-  --primary: #2563eb;
-  --secondary: #1e40af;
-  --bg: #f3f6fb;
-  --card-bg: rgba(255, 255, 255, 0.8);
-  --border: rgba(0, 0, 0, 0.1);
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 body {
-  font-family: "Inter", sans-serif;
-  background: var(--bg);
+  font-family: "Poppins", sans-serif;
+  background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
+  color: #fff;
   margin: 0;
+  padding: 0;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  animation: bgAnimation 10s ease-in-out infinite alternate;
 }
 
-/* -------------------------
-   AUTHENTICATION CARD
--------------------------- */
+/* 🔮 Smooth animated background glow */
+@keyframes bgAnimation {
+  0% {
+    background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
+  }
+  50% {
+    background: radial-gradient(circle at bottom right, #181824, #101020 60%);
+  }
+  100% {
+    background: radial-gradient(circle at top right, #12121c, #0a0a14 60%);
+  }
+}
+
+/* ✨ Login/Signup Cards */
 .auth-card {
-  background: var(--card-bg);
-  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
   border-radius: 20px;
-  padding: 40px 35px;
+  padding: 35px;
   width: 340px;
   text-align: center;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border);
-  transition: transform 0.3s ease;
+  box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+  transition: box-shadow 0.3s ease;
 }
 
 .auth-card:hover {
-  transform: translateY(-3px);
+  box-shadow: 0 0 40px rgba(173, 216, 230, 0.6);
 }
 
-.auth-box h2 {
-  margin-bottom: 8px;
-  color: var(--secondary);
-  font-weight: 700;
-}
-
-.subtitle {
-  font-size: 14px;
-  opacity: 0.7;
-  margin-bottom: 20px;
-}
-
+/* 🔘 Inputs and Buttons */
 input {
   width: 90%;
-  padding: 12px;
-  margin: 10px 0;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 8px;
   outline: none;
-  background: rgba(255, 255, 255, 0.9);
-  transition: border-color 0.2s;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: background 0.3s ease;
 }
 
 input:focus {
-  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 button {
   width: 95%;
-  padding: 12px;
-  background-color: var(--primary);
+  padding: 10px;
+  background: linear-gradient(135deg, #3f51b5, #673ab7);
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: bold;
   margin-top: 10px;
+  box-shadow: 0 0 15px rgba(103, 58, 183, 0.4);
   transition: background 0.3s, transform 0.2s;
 }
 
 button:hover {
-  background-color: var(--secondary);
+  background: linear-gradient(135deg, #5c6bc0, #7e57c2);
   transform: translateY(-2px);
 }
 
-.msg {
-  color: #333;
-  font-size: 14px;
-  min-height: 20px;
-}
-
-.switch-text {
-  margin-top: 15px;
-  font-size: 14px;
-  color: #333;
-}
-
+/* ✨ Links and Messages */
 a {
-  color: var(--primary);
+  color: #a7a7ff;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: bold;
 }
+
 a:hover {
   text-decoration: underline;
 }
 
-/* Avatar upload */
-.avatar-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.avatar-container img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin-bottom: 8px;
-  border: 3px solid var(--primary);
+.msg {
+  color: #ffe;
+  font-size: 14px;
+  min-height: 20px;
 }
 
-/* -------------------------
-   DASHBOARD
--------------------------- */
+/* 📋 Dashboard Section */
 .dashboard {
   width: 90%;
-  max-width: 750px;
-  background: #ffffff;
-  border-radius: 18px;
+  max-width: 700px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border-radius: 20px;
   padding: 25px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
-  color: #333;
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  box-shadow: 0 0 25px rgba(138, 43, 226, 0.4);
+  backdrop-filter: blur(15px);
 }
 
 .teacher-header {
@@ -146,20 +119,7 @@ header {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 2px solid var(--primary);
-}
-
-.logout {
-  padding: 8px 16px;
-  background-color: #ef4444;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.logout:hover {
-  background-color: #dc2626;
+  border: 2px solid #7e57c2;
 }
 
 .controls {
@@ -169,59 +129,30 @@ header {
   margin: 20px 0;
 }
 
-select {
-  padding: 10px;
+select, .logout {
+  padding: 8px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: #f9fafb;
-  cursor: pointer;
-}
-
-#saveAll,
-#viewHistory {
-  background: var(--primary);
-  color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-weight: 600;
-}
-#saveAll:hover,
-#viewHistory:hover {
-  background: var(--secondary);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
+/* 🧑‍🎓 Student list styling */
 .student-row {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #eee;
-}
-
-h3 {
-  color: var(--secondary);
-  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  color: #fff;
 }
 
-th,
-td {
-  padding: 10px;
-  border-bottom: 1px solid #e5e7eb;
+th, td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px;
   text-align: left;
-  font-size: 14px;
-}
-
-th {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-td {
-  color: #374151;
 }
