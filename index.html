@@ -7,21 +7,24 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Authentication -->
+  <!-- Authentication Section -->
   <div id="authContainer" class="auth-card">
     <!-- Login -->
     <div id="authLogin" class="auth-box">
-      <h2>Teacher Login</h2>
+      <h2>Welcome Back 👋</h2>
+      <p class="subtitle">Login to continue</p>
       <input type="email" id="loginEmail" placeholder="Email" />
       <input type="password" id="loginPassword" placeholder="Password" />
       <button id="loginBtn">Login</button>
       <p id="authMessage" class="msg"></p>
-      <p>Don’t have an account? <a href="#" id="showSignup">Create one</a></p>
+      <p class="switch-text">Don’t have an account? <a href="#" id="showSignup">Create one</a></p>
     </div>
 
     <!-- Signup -->
     <div id="authSignup" class="auth-box" style="display:none;">
-      <h2>Create Teacher Account</h2>
+      <h2>Create Account ✨</h2>
+      <p class="subtitle">Join as a teacher</p>
+
       <div class="avatar-container">
         <img id="avatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" />
         <input type="file" id="avatarUpload" accept="image/*" />
@@ -34,11 +37,11 @@
       <input type="text" id="signupSubject" placeholder="Subject you teach (e.g. Math)" />
       <button id="signupBtn">Create Account</button>
       <p id="signupMessage" class="msg"></p>
-      <p>Already have an account? <a href="#" id="showLogin">Login here</a></p>
+      <p class="switch-text">Already have an account? <a href="#" id="showLogin">Login here</a></p>
     </div>
   </div>
 
-  <!-- Dashboard -->
+  <!-- Dashboard Section -->
   <div id="dashboard" class="dashboard" style="display:none;">
     <header>
       <div class="teacher-header">
@@ -75,12 +78,7 @@
       <table id="historyTable">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Class</th>
-            <th>Subject</th>
-            <th>Student</th>
-            <th>Status</th>
-            <th>Teacher</th>
+            <th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>Teacher</th>
           </tr>
         </thead>
         <tbody id="historyTableBody"></tbody>
@@ -88,17 +86,16 @@
     </div>
   </div>
 
+  <!-- Firebase + JS -->
   <script type="module" src="firebase.js"></script>
   <script type="module" src="students.js"></script>
   <script type="module" src="script.js"></script>
 
+  <!-- Avatar Preview Script -->
   <script>
-    // Avatar preview (optional)
-    document.getElementById("avatarUpload").addEventListener("change", function (e) {
+    document.getElementById("avatarUpload").addEventListener("change", (e) => {
       const file = e.target.files[0];
-      if (file) {
-        document.getElementById("avatarPreview").src = URL.createObjectURL(file);
-      }
+      if (file) document.getElementById("avatarPreview").src = URL.createObjectURL(file);
     });
   </script>
 </body>
