@@ -1,9 +1,16 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
+
+:root {
+  --primary: #2563eb;
+  --secondary: #1e40af;
+  --bg: #f3f6fb;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --border: rgba(0, 0, 0, 0.1);
+}
 
 body {
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, #a4508b, #5f0a87);
-  color: #fff;
+  font-family: "Inter", sans-serif;
+  background: var(--bg);
   margin: 0;
   display: flex;
   justify-content: center;
@@ -11,26 +18,34 @@ body {
   min-height: 100vh;
 }
 
-/* Authentication Card */
+/* -------------------------
+   AUTHENTICATION CARD
+-------------------------- */
 .auth-card {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--card-bg);
   backdrop-filter: blur(18px);
-  border-radius: 25px;
+  border-radius: 20px;
   padding: 40px 35px;
   width: 340px;
   text-align: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-3px);
 }
 
 .auth-box h2 {
-  margin-bottom: 10px;
-  color: #fff;
-  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--secondary);
+  font-weight: 700;
 }
 
 .subtitle {
   font-size: 14px;
-  opacity: 0.85;
+  opacity: 0.7;
   margin-bottom: 20px;
 }
 
@@ -38,31 +53,37 @@ input {
   width: 90%;
   padding: 12px;
   margin: 10px 0;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 10px;
   outline: none;
+  background: rgba(255, 255, 255, 0.9);
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  border-color: var(--primary);
 }
 
 button {
   width: 95%;
   padding: 12px;
-  background-color: #8e24aa;
+  background-color: var(--primary);
   color: white;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
   margin-top: 10px;
-  transition: 0.2s;
+  transition: background 0.3s, transform 0.2s;
 }
 
 button:hover {
-  background-color: #9c27b0;
+  background-color: var(--secondary);
   transform: translateY(-2px);
 }
 
 .msg {
-  color: #ffe;
+  color: #333;
   font-size: 14px;
   min-height: 20px;
 }
@@ -70,10 +91,11 @@ button:hover {
 .switch-text {
   margin-top: 15px;
   font-size: 14px;
+  color: #333;
 }
 
 a {
-  color: #f3e5f5;
+  color: var(--primary);
   text-decoration: none;
   font-weight: 600;
 }
@@ -92,18 +114,26 @@ a:hover {
   height: 80px;
   border-radius: 50%;
   margin-bottom: 8px;
-  border: 3px solid #8e24aa;
+  border: 3px solid var(--primary);
 }
 
-/* Dashboard */
+/* -------------------------
+   DASHBOARD
+-------------------------- */
 .dashboard {
   width: 90%;
-  max-width: 700px;
-  background: #fff;
+  max-width: 750px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
   color: #333;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .teacher-header {
@@ -116,6 +146,20 @@ a:hover {
   width: 60px;
   height: 60px;
   border-radius: 50%;
+  border: 2px solid var(--primary);
+}
+
+.logout {
+  padding: 8px 16px;
+  background-color: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.logout:hover {
+  background-color: #dc2626;
 }
 
 .controls {
@@ -125,21 +169,59 @@ a:hover {
   margin: 20px 0;
 }
 
-select,
-.logout {
-  padding: 8px;
+select {
+  padding: 10px;
   border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+#saveAll,
+#viewHistory {
+  background: var(--primary);
+  color: #fff;
   border: none;
-  background: #ede7f6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+#saveAll:hover,
+#viewHistory:hover {
+  background: var(--secondary);
 }
 
 .student-row {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
 }
 
 h3 {
-  color: #4a148c;
+  color: var(--secondary);
+  margin-bottom: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+td {
+  color: #374151;
 }
