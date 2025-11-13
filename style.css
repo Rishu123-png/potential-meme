@@ -156,3 +156,19 @@ th, td {
   padding: 8px;
   text-align: left;
 }
+.footer {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.footer:hover {
+  color: #b388ff;
+  text-shadow: 0 0 10px rgba(179, 136, 255, 0.6);
+}
