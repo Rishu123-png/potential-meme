@@ -1,18 +1,35 @@
-<!DOCTYPE html>
+      <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>School Attendance System</title>
+
+  <!-- Your aesthetic CSS (keep your current style.css or replace with the version you liked) -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Flatpickr for fancy calendar -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    /* small inline tweak so date picker fits inside dashboard controls */
+    .flatpickr-input {
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+    }
+    .calendar-wrapper { display:flex; gap:8px; align-items:center; }
+    .calendar-label { color: #cfe6ff; font-size: 13px; }
+  </style>
 </head>
 <body>
-  <!-- Authentication Section -->
+  <!-- Authentication -->
   <div id="authContainer" class="auth-card">
     <!-- Login -->
     <div id="authLogin" class="auth-box">
-      <h2>Welcome Back 👋</h2>
-      <p class="subtitle">Login to continue</p>
+      <h2>Teacher Login</h2>
+      <p class="subtitle">Sign in with your school account</p>
       <input type="email" id="loginEmail" placeholder="Email" />
       <input type="password" id="loginPassword" placeholder="Password" />
       <button id="loginBtn">Login</button>
@@ -22,8 +39,8 @@
 
     <!-- Signup -->
     <div id="authSignup" class="auth-box" style="display:none;">
-      <h2>Create Account ✨</h2>
-      <p class="subtitle">Join as a teacher</p>
+      <h2>Create Teacher Account</h2>
+      <p class="subtitle">Register (email/password)</p>
 
       <div class="avatar-container">
         <img id="avatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" />
@@ -33,15 +50,15 @@
       <input type="text" id="fullName" placeholder="Full Name" />
       <input type="email" id="signupEmail" placeholder="Email" />
       <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" />
-      <input type="text" id="signupClass" placeholder="Class you teach (e.g. 10A)" />
-      <input type="text" id="signupSubject" placeholder="Subject you teach (e.g. Math)" />
+      <input type="text" id="signupClass" placeholder="Class you teach (e.g. 11A)" />
+      <input type="text" id="signupSubject" placeholder="Subject you teach (e.g. AI)" />
       <button id="signupBtn">Create Account</button>
       <p id="signupMessage" class="msg"></p>
       <p class="switch-text">Already have an account? <a href="#" id="showLogin">Login here</a></p>
     </div>
   </div>
 
-  <!-- Dashboard Section -->
+  <!-- Dashboard -->
   <div id="dashboard" class="dashboard" style="display:none;">
     <header>
       <div class="teacher-header">
@@ -55,20 +72,28 @@
     </header>
 
     <div class="controls">
-      <select id="classSelect">
-        <option value="">Select Class</option>
-        <option value="10A">10A</option>
-        <option value="10B">10B</option>
-        <option value="11A">11A</option>
-      </select>
-      <select id="subjectSelect">
-        <option value="">Select Subject</option>
-        <option value="Math">Math</option>
-        <option value="Science">Science</option>
-        <option value="English">English</option>
-      </select>
-      <button id="saveAll">Save Attendance</button>
-      <button id="viewHistory">View History</button>
+      <div class="field">
+        <label class="calendar-label">Select date for history</label>
+        <div class="calendar-wrapper">
+          <input id="historyDate" class="flatpickr" placeholder="Pick a date" readonly />
+          <button id="loadDate" class="btn">Load</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Class</label>
+        <select id="classSelect"><option value="">Select Class</option></select>
+      </div>
+
+      <div class="field">
+        <label>Subject</label>
+        <select id="subjectSelect"><option value="">Select Subject</option></select>
+      </div>
+
+      <div class="actions">
+        <button id="saveAll">Save Attendance</button>
+        <button id="viewHistory">View History (today)</button>
+      </div>
     </div>
 
     <div id="studentListContainer" class="student-list"></div>
@@ -86,16 +111,20 @@
     </div>
   </div>
 
-  <!-- Firebase + JS -->
+  <!-- include flatpickr -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Firebase + app scripts (floating-orbs.js removed) -->
   <script type="module" src="firebase.js"></script>
   <script type="module" src="students.js"></script>
   <script type="module" src="script.js"></script>
 
-  <!-- Avatar Preview Script -->
+  <!-- small avatar preview for signup -->
   <script>
-    document.getElementById("avatarUpload").addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) document.getElementById("avatarPreview").src = URL.createObjectURL(file);
+    const av = document.getElementById('avatarUpload');
+    av?.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (f) document.getElementById('avatarPreview').src = URL.createObjectURL(f);
     });
   </script>
 </body>
