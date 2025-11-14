@@ -1,10 +1,10 @@
 // students.js
 export const studentsData = {
-  "11A": {
+  "11A2": {
     "Physics": ["Aman", "Bhavya", "Kriti", "Ravi", "Tanu"],
     "Chemistry": ["Aman", "Kriti", "Neha", "Ravi", "Yash"],
     "Maths": ["Bhavya", "Kriti", "Neha", "Ravi", "Tanu"],
-    "AI": ["Aman", "Ravi", "Tanu"]
+    "AI": ["Rishu Jaswar", "Khushi Chaudhary", "wania Srivastava" , "vrunda Shrikant patil" , "Trisha Bhatnagar" , ]
   },
   "11B": {
     "Physics": ["Ankit", "Divya", "Mitali", "Sahil", "Vikas"],
