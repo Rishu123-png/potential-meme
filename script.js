@@ -364,4 +364,5 @@ window.addEventListener("DOMContentLoaded", () => {
     if (teacherSubject) subjectSelect.value = teacherSubject;  
     renderStudentsFor(classSelect.value, subjectSelect.value);  
     updateSaveButtonState();  
-  });
+  });  
+});
