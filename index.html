@@ -1,115 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>School Attendance System</title>
 
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
   <style>
-    /* small layout tweaks so dashboard is bigger & prettier */
-    body { min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:30px; background:#07071a; color:#fff; font-family:Poppins, sans-serif; }
-    .wrapper { width:1100px; max-width:95vw; }
-    .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
-    .auth-card { width:380px; margin:0 auto; }
-    .dashboard { background: rgba(255,255,255,0.03); border-radius:14px; padding:18px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
-    .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    .field { display:flex; flex-direction:column; gap:6px; }
-    .actions { display:flex; gap:10px; }
-    .teacher-header { display:flex; gap:14px; align-items:center; }
-    .teacher-avatar { width:64px; height:64px; border-radius:50%; border:2px solid rgba(255,255,255,0.06); }
-    .student-list { margin-top:14px; max-height:420px; overflow:auto; padding-right:6px; }
-    .student-row { display:flex; justify-content:space-between; align-items:center; padding:8px 6px; border-bottom:1px solid rgba(255,255,255,0.04); }
-    .big { font-size:16px; }
-    .btn { padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:linear-gradient(90deg,#4a3aff,#7b39ff); color:#fff; }
-    .btn.secondary { background: rgba(255,255,255,0.06); color:#fff; border:1px solid rgba(255,255,255,0.04); }
-    footer.footer { text-align:center; margin-top:12px; color:#bfbfff; }
-    @media(max-width:900px){ .controls{flex-direction:column; align-items:stretch;} .topbar{flex-direction:column; align-items:flex-start; gap:8px;} }
+    /* small inline tweak so date picker fits inside dashboard controls */
+    .flatpickr-input {
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+    }
+    .calendar-wrapper { display:flex; gap:8px; align-items:center; }
+    .calendar-label { color: #cfe6ff; font-size: 13px; }
+
+    /* Make dashboard wider & nicer */
+    .dashboard {
+      width: 95%;
+      max-width: 1000px;
+      margin: 20px auto;
+    }
+
+    .manage-students {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .manage-students input, .manage-students select {
+      padding:8px;
+      border-radius:8px;
+      border:none;
+      background: rgba(255,255,255,0.06);
+      color:#fff;
+    }
+
+    .student-row { display:flex; justify-content:space-between; gap:10px; padding:8px 6px; align-items:center; }
+    .student-row button.delete-btn { background:transparent; border:1px solid rgba(255,255,255,0.08); padding:6px 8px; border-radius:8px; cursor:pointer; }
+    .student-row button.delete-btn:hover { background: rgba(255,255,255,0.04); }
+
+    .controls .field { min-width:160px; }
+
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+    .print-btn { margin-left:8px; }
+
+    /* responsive */
+    @media (max-width:720px){
+      .dashboard { padding: 12px; }
+      .manage-students { flex-direction:column; align-items:stretch; }
+    }
   </style>
 </head>
 <body>
-  <div class="wrapper">
-    <!-- Login card -->
-    <div id="authContainer" class="auth-card">
-      <div id="authLogin" class="auth-box">
-        <h2>Teacher Login</h2>
-        <p class="subtitle">Sign in with your school account</p>
-        <input type="email" id="loginEmail" placeholder="Email" />
-        <input type="password" id="loginPassword" placeholder="Password" />
-        <div style="display:flex;gap:8px;margin-top:10px;">
-          <button id="loginBtn" class="btn">Login</button>
-          <button id="demoBtn" class="btn secondary" title="(Optional) fill test credentials">Fill example</button>
-        </div>
-        <p id="authMessage" class="msg"></p>
-      </div>
+  <!-- Authentication -->
+  <div id="authContainer" class="auth-card">
+    <!-- Login -->
+    <div id="authLogin" class="auth-box">
+      <h2>Teacher Login</h2>
+      <p class="subtitle">Sign in with your school account</p>
+      <input type="email" id="loginEmail" placeholder="Email" />
+      <input type="password" id="loginPassword" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <p id="authMessage" class="msg"></p>
+      <!-- removed create account link (admin creates teacher accounts) -->
     </div>
-
-    <!-- Dashboard -->
-    <div id="dashboard" class="dashboard" style="display:none;">
-      <div class="topbar">
-        <div class="teacher-header">
-          <img id="teacherAvatar" class="teacher-avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" />
-          <div>
-            <div id="welcome" class="big">Welcome</div>
-            <div id="teacherMeta" style="opacity:0.8;font-size:13px;"></div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;align-items:center;">
-          <button id="addStudentBtn" class="btn secondary">Add Student</button>
-          <button id="printBtn" class="btn">Print History</button>
-          <button id="logoutBtn" class="btn secondary">Logout</button>
-        </div>
-      </div>
-
-      <div class="controls">
-        <div class="field">
-          <label class="calendar-label">Select date for history</label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input id="historyDate" class="flatpickr" placeholder="Pick a date" readonly />
-            <button id="loadDate" class="btn secondary">Load</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Class</label>
-          <select id="classSelect"><option value="">Select Class</option></select>
-        </div>
-
-        <div class="field">
-          <label>Subject</label>
-          <select id="subjectSelect"><option value="">Select Subject</option></select>
-        </div>
-
-        <div class="actions" style="margin-left:auto;">
-          <button id="saveAll" class="btn">Save Attendance</button>
-          <button id="viewHistory" class="btn secondary">View History (today)</button>
-        </div>
-      </div>
-
-      <div id="studentListContainer" class="student-list"></div>
-
-      <div id="historyContainer" style="display:none;margin-top:12px;">
-        <h3>Attendance History</h3>
-        <table id="historyTable" style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr style="text-align:left;opacity:0.9;"><th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>Teacher</th></tr>
-          </thead>
-          <tbody id="historyTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <footer class="footer">
-      🌐 Developed with 💜 by <strong>Rishu Jaswar</strong>
-    </footer>
   </div>
 
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard" style="display:none;">
+    <header>
+      <div class="teacher-header">
+        <img id="teacherAvatar" class="teacher-avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" />
+        <div>
+          <h1 id="welcome">Welcome</h1>
+          <p id="teacherMeta"></p>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="logoutBtn" class="logout">Logout</button>
+      </div>
+    </header>
+
+    <div class="controls" style="margin-top:12px;">
+      <div class="field">
+        <label class="calendar-label">Select date for history</label>
+        <div class="calendar-wrapper">
+          <input id="historyDate" class="flatpickr" placeholder="Pick a date" readonly />
+          <button id="loadDate" class="btn">Load</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Class</label>
+        <select id="classSelect"><option value="">Select Class</option></select>
+      </div>
+
+      <div class="field">
+        <label>Subject</label>
+        <select id="subjectSelect"><option value="">Select Subject</option></select>
+      </div>
+
+      <div class="actions">
+        <button id="saveAll">Save Attendance</button>
+        <button id="viewHistory">View History (today)</button>
+        <button id="printReport" class="print-btn">Print Visible Report</button>
+      </div>
+    </div>
+
+    <!-- Manage students area (Add / Delete) -->
+    <div class="manage-students" id="manageStudents">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input id="newStudentName" placeholder="Student name (e.g. Rishu Jaswar)" />
+        <select id="newStudentClass"></select>
+        <select id="newStudentSubject"></select>
+        <button id="addStudentBtn">Add Student</button>
+      </div>
+      <div style="margin-left:auto;color:#cfe6ff;font-size:13px;">
+        Add / Delete students here (this updates the live students list)
+      </div>
+    </div>
+
+    <div id="studentListContainer" class="student-list" style="margin-top:12px; border-radius:10px; padding:8px; background:rgba(255,255,255,0.02);"></div>
+
+    <div id="historyContainer" style="display:none; margin-top:16px;">
+      <h3>Attendance History</h3>
+      <table id="historyTable" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th>Date</th><th>Class</th><th>Subject</th><th>Student</th><th>Status</th><th>Teacher</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- include flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Firebase + app scripts -->
   <script type="module" src="firebase.js"></script>
   <script type="module" src="students.js"></script>
   <script type="module" src="script.js"></script>
+
+  <footer class="footer" style="text-align:center; margin:18px 0;">
+    🌐 Developed with 💜 by <strong>Rishu Jaswar</strong>
+  </footer>
 </body>
 </html>
