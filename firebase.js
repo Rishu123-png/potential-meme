@@ -1,11 +1,9 @@
-// firebase.js (CDN Version for GitHub Pages)
+// firebase.js - Firebase CDN version 10.12.5 (MATCHING script.js)
 
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBSWzs19870cWmGxd9-kJsKOOs755jyuU0",
   authDomain: "school-attendence-system-9090.firebaseapp.com",
@@ -16,7 +14,6 @@ const firebaseConfig = {
   appId: "1:728832169882:web:b335869779e73ab8c20c23"
 };
 
-// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
