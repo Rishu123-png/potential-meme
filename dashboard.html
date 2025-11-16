@@ -1,48 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - School Attendance</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="script.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard - School Attendance</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body onload="initDashboardPage()">
+  <div class="container">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div>
+        <h2>Welcome, <span id="teacherName">Teacher</span></h2>
+        <div style="color:var(--muted)">Subject: <strong id="teacherSubject"></strong></div>
+      </div>
+      <div>
+        <button class="small-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
 
-<div class="dashboard-container">
-  <div class="dashboard-header">
-    <h2>Welcome <span id="teacherName"></span></h2>
-    <button onclick="logout()">Logout</button>
+    <label for="classSelect">Select Class</label>
+    <select id="classSelect"></select>
+
+    <div class="row" style="margin-top:12px;">
+      <button onclick="window.location.href='add-students.html'">Add Student</button>
+      <button onclick="goToMarkAttendance()">Mark Attendance</button>
+      <button onclick="window.location.href='top-bunkers.html'">Top Bunkers</button>
+    </div>
+
+    <div class="table">
+      <table id="studentsTable"><tr><th>Name</th><th>Class</th><th>Absences</th><th>Actions</th></tr></table>
+    </div>
+
+    <!-- Modal for calendar history (works in single-page dashboard scenario) -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModal()"></div>
+    <div id="attendanceModal" class="modal">
+      <h3>Attendance for <span id="modalStudentName"></span></h3>
+      <label>Month</label>
+      <input id="monthPicker" type="month" onchange="loadAttendanceMonth()">
+      <div class="table">
+        <table id="attendanceMonthTable"><tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr></table>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button onclick="printReport()">Print Report</button>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+
+    <p class="footer">Developed by Rishu Jaswar</p>
   </div>
 
-  <div class="class-select">
-    <label>Select Class:</label>
-    <select id="classSelect" onchange="loadStudents()">
-      <option value="">--Select Class--</option>
-    </select>
-  </div>
-
-  <button onclick="showAddStudentForm()">Add Student</button>
-  <button onclick="showTopBunkers()">Top Bunkers</button>
-
-  <div id="addStudentForm" class="hidden">
-    <h3>Add Student</h3>
-    <input type="text" id="studentName" placeholder="Student Name">
-    <input type="text" id="studentClassInput" placeholder="Class">
-    <button onclick="addStudent()">Save Student</button>
-    <button onclick="closeAddStudentForm()">Cancel</button>
-  </div>
-
-  <div id="studentsList"></div>
-
-  <div id="attendanceModal" class="hidden">
-    <h3>Attendance for <span id="modalStudentName"></span></h3>
-    <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
-    <div id="attendanceTableContainer"></div>
-    <button onclick="printReport()">Print Report</button>
-    <button onclick="closeModal()">Close</button>
-  </div>
-</div>
-
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
