@@ -1,4 +1,7 @@
 // script.js
+// Clean, fixed and page-aware script for:
+// index.html, dashboard.html, add-students.html, mark-attendance.html, top-bunkers.html
+
 import { auth, db } from "./firebase.js";
 import {
   signInWithEmailAndPassword,
@@ -9,101 +12,146 @@ import {
   ref, onValue, get, set, push
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-/* Global state */
-let currentTeacher = null;
-let teacherProfile = null;
-let allStudents = {};
-let selectedStudentId = null;
-let currentClassFilter = "";
+/* ----------------------
+   Global state
+   ---------------------- */
+let currentTeacherUser = null;    // firebase auth user
+let teacherProfile = null;        // teacher info from RTDB
+let allStudents = {};             // cached students
+let selectedStudentId = null;     // selected for marking/history
+let currentClassFilter = "";      // class selected in dashboard
 
-/* Auth change - keep user state and redirect if needed */
-onAuthStateChanged(auth, user => {
-  currentTeacher = user;
+/* ----------------------
+   Keep auth state in sync
+   ---------------------- */
+onAuthStateChanged(auth, (user) => {
+  currentTeacherUser = user;
 });
 
-/* ----------------- LOGIN ----------------- */
+/* ======================
+   LOGIN / LOGOUT
+   ====================== */
+
+// Called from index.html (onclick="login()")
 window.login = async function () {
-  const email = document.getElementById('email')?.value?.trim();
-  const password = document.getElementById('password')?.value;
-  if (!email || !password) return alert('Enter email and password');
+  const email = (document.getElementById('email')?.value || '').trim();
+  const password = document.getElementById('password')?.value || '';
+  if (!email || !password) { alert('Enter email and password'); return; }
 
   try {
     const cred = await signInWithEmailAndPassword(auth, email, password);
-    currentTeacher = cred.user;
-    // go to dashboard
+    currentTeacherUser = cred.user;
+    // Redirect to dashboard after successful login
     window.location.href = 'dashboard.html';
-  } catch (e) {
-    alert(e.message || 'Login failed');
+  } catch (err) {
+    console.error('Login failed', err);
+    alert(err.message || 'Login failed');
   }
 };
 
-/* ----------------- LOGOUT ----------------- */
+// Called from pages (onclick="logout()")
 window.logout = async function () {
   try {
     await signOut(auth);
-  } catch (e) { /* ignore */ }
-  window.location.href = 'index.html';
+  } catch (err) {
+    console.warn('Sign out error', err);
+  } finally {
+    window.location.href = 'index.html';
+  }
 };
 
-/* ----------------- Load teacher profile & classes ----------------- */
+/* ======================
+   Teacher profile & classes
+   ====================== */
+
+/*
+  This function populates:
+   - #teacherName
+   - #teacherSubject
+   - #teacherSubjectAdd
+   - select#classSelect
+   - select#classSelectAdd
+
+  Call from dashboard.html onload: initDashboardPage()
+  Call from add-students.html onload: initAddStudentsPage()
+*/
 export async function loadTeacherProfile() {
   if (!auth.currentUser) {
-    // wait and retry shortly
-    setTimeout(loadTeacherProfile, 300);
+    // retry shortly if auth not ready yet
+    setTimeout(loadTeacherProfile, 200);
     return;
   }
+
   const uid = auth.currentUser.uid;
   const teacherRef = ref(db, `teachers/${uid}`);
-  onValue(teacherRef, snap => {
-    const data = snap.val() || {};
+
+  // listen for teacher profile changes
+  onValue(teacherRef, snapshot => {
+    const data = snapshot.val() || {};
     teacherProfile = data;
+
+    // set UI fields if present
     const nameEl = document.getElementById('teacherName');
     const subjectEl = document.getElementById('teacherSubject');
     const subjectAddEl = document.getElementById('teacherSubjectAdd');
+
     if (nameEl) nameEl.innerText = data.name || '';
     if (subjectEl) subjectEl.innerText = data.subject || '';
     if (subjectAddEl) subjectAddEl.innerText = data.subject || '';
 
-    // populate classes into selects
+    // populate class selects (supports object or array)
     const classes = data.classes || {};
-    function fillSelect(id) {
-      const sel = document.getElementById(id);
+    const ids = Array.isArray(classes) ? classes : Object.keys(classes).length ? Object.values(classes) : [];
+
+    function fill(selectId) {
+      const sel = document.getElementById(selectId);
       if (!sel) return;
       sel.innerHTML = '<option value="">-- Select class --</option>';
-      if (Array.isArray(classes)) {
-        classes.forEach(c => {
-          const o = document.createElement('option'); o.value = c; o.innerText = c; sel.appendChild(o);
-        });
-      } else {
-        for (const k in classes) {
-          const v = classes[k];
-          const o = document.createElement('option'); o.value = v; o.innerText = v; sel.appendChild(o);
-        }
-      }
+      ids.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.innerText = c;
+        sel.appendChild(opt);
+      });
     }
-    fillSelect('classSelect');
-    fillSelect('classSelectAdd');
+
+    fill('classSelect');
+    fill('classSelectAdd');
   });
 }
 
-/* ----------------- Dashboard: students list ----------------- */
+/* ======================
+   Dashboard: students list
+   ====================== */
+
+// Called when dashboard.html loads
 window.initDashboardPage = function () {
   if (!auth.currentUser) {
+    // wait for auth to initialize
     setTimeout(window.initDashboardPage, 300);
     return;
   }
+
+  // Load teacher profile and populate classes
   loadTeacherProfile();
+
+  // Attach onchange to class selector
   const classSel = document.getElementById('classSelect');
   if (classSel) {
     classSel.onchange = () => {
-      currentClassFilter = classSel.value;
+      currentClassFilter = classSel.value || '';
       loadStudents(currentClassFilter);
     };
   }
+
+  // initial students load (empty until class chosen)
+  loadStudents();
 };
 
+// load all students and render (filtered by class if provided)
 export function loadStudents(selectedClass = '') {
-  currentClassFilter = selectedClass;
+  currentClassFilter = selectedClass || currentClassFilter || '';
+
   const studentsRef = ref(db, 'students');
   onValue(studentsRef, snap => {
     allStudents = snap.val() || {};
@@ -114,200 +162,327 @@ export function loadStudents(selectedClass = '') {
 function renderStudentsTable() {
   const table = document.getElementById('studentsTable');
   if (!table) return;
+
+  // header
   table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Absences</th><th>Actions</th></tr>`;
+
+  if (!allStudents || !auth.currentUser) return;
+
   for (const id in allStudents) {
     const s = allStudents[id];
     if (!s) continue;
-    if (s.teacher !== auth.currentUser.uid) continue; // only this teacher's students
+
+    // teacher restriction — teacher sees only their students
+    if (s.teacher !== auth.currentUser.uid) continue;
+
+    // class filter
     if (currentClassFilter && s.class !== currentClassFilter) continue;
+
     const row = table.insertRow();
     row.insertCell(0).innerText = s.name || '';
     row.insertCell(1).innerText = s.class || '';
-    const absentCount = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
-    row.insertCell(2).innerText = absentCount;
-    const actions = row.insertCell(3);
-    // Edit
-    const editBtn = document.createElement('button'); editBtn.innerText = 'Edit';
-    editBtn.onclick = () => {
-      const newName = prompt('Edit name', s.name || '');
-      if (newName) set(ref(db, `students/${id}/name`), newName);
+
+    const absences = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
+    row.insertCell(2).innerText = absences;
+
+    const actionCell = row.insertCell(3);
+
+    // Edit button (only for teacher)
+    const editBtn = document.createElement('button');
+    editBtn.innerText = 'Edit';
+    editBtn.onclick = async () => {
+      const newName = prompt('Edit student name', s.name || '');
+      if (!newName) return;
+      try {
+        await set(ref(db, `students/${id}/name`), newName);
+      } catch (err) { alert('Failed to edit name'); console.error(err); }
     };
-    actions.appendChild(editBtn);
-    // Delete
-    const delBtn = document.createElement('button'); delBtn.innerText = 'Delete';
-    delBtn.onclick = () => {
-      if (!confirm('Delete student?')) return;
-      set(ref(db, `students/${id}`), null);
+    actionCell.appendChild(editBtn);
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.innerText = 'Delete';
+    delBtn.onclick = async () => {
+      if (!confirm('Delete this student?')) return;
+      try {
+        await set(ref(db, `students/${id}`), null); // remove node
+      } catch (err) { alert('Delete failed'); console.error(err); }
     };
-    actions.appendChild(delBtn);
-    // Mark Attendance
-    const markBtn = document.createElement('button'); markBtn.innerText = 'Mark Attendance';
+    actionCell.appendChild(delBtn);
+
+    // Mark Attendance button
+    const markBtn = document.createElement('button');
+    markBtn.innerText = 'Mark Attendance';
     markBtn.onclick = () => {
-      // store selected id and open modal (or go to mark page)
       localStorage.setItem('selectedStudentId', id);
-      // If dashboard has modal elements, open modal; fallback to mark-attendance.html
+      // If dashboard contains modal, open modal; otherwise go to mark-attendance page
       if (document.getElementById('attendanceModal')) {
         openAttendanceModal(id);
       } else {
         window.location.href = 'mark-attendance.html';
       }
     };
-    actions.appendChild(markBtn);
+    actionCell.appendChild(markBtn);
   }
 }
 
-/* ----------------- Add Student Page ----------------- */
+/* ======================
+   Add Student page
+   ====================== */
+
+// Called from add-students.html onload
 window.initAddStudentsPage = function () {
-  if (!auth.currentUser) {
-    setTimeout(window.initAddStudentsPage, 300);
-    return;
-  }
+  if (!auth.currentUser) { setTimeout(window.initAddStudentsPage, 300); return; }
   loadTeacherProfile();
 };
 
 window.addStudent = async function () {
-  const name = document.getElementById('studentName')?.value?.trim();
-  const cls = document.getElementById('classSelectAdd')?.value;
-  if (!name || !cls) return alert('Enter name and select class');
+  const name = (document.getElementById('studentName')?.value || '').trim();
+  const cls = (document.getElementById('classSelectAdd')?.value || '').trim();
+  if (!name || !cls) { alert('Enter student name and class'); return; }
+
   const subj = teacherProfile?.subject || '';
   try {
     const newRef = push(ref(db, 'students'));
     await set(newRef, { name, class: cls, subject: subj, teacher: auth.currentUser.uid, attendance: {} });
     alert('Student added');
     window.location.href = 'dashboard.html';
-  } catch (e) {
-    alert('Failed: ' + (e.message || e));
+  } catch (err) {
+    console.error('Add student failed', err);
+    alert('Failed to add student');
   }
 };
 
-/* ----------------- Attendance modal & month view ----------------- */
+/* ======================
+   Attendance modal & month view (dashboard modal version)
+   ====================== */
+
 export function openAttendanceModal(studentId) {
   selectedStudentId = studentId;
   const overlay = document.getElementById('modalOverlay');
   const modal = document.getElementById('attendanceModal');
+
+  // If modal elements aren't present (multi-page flow), redirect to mark-attendance page
   if (!modal || !overlay) {
     localStorage.setItem('selectedStudentId', studentId);
     window.location.href = 'mark-attendance.html';
     return;
   }
-  const student = allStudents[studentId];
-  document.getElementById('modalStudentName').innerText = student?.name || 'Student';
-  overlay.style.display = 'block'; modal.style.display = 'block';
-  const today = new Date(); const defMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
-  const mp = document.getElementById('monthPicker'); if (mp) mp.value = defMonth;
+
+  const student = allStudents[studentId] || {};
+  document.getElementById('modalStudentName').innerText = student.name || 'Student';
+  overlay.style.display = 'block';
+  modal.style.display = 'block';
+
+  // default month => current month
+  const now = new Date();
+  const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mp = document.getElementById('monthPicker');
+  if (mp) mp.value = defaultMonth;
+
   loadAttendanceMonth();
 }
 
 window.closeModal = function () {
-  const overlay = document.getElementById('modalOverlay'); const modal = document.getElementById('attendanceModal');
-  if (overlay) overlay.style.display = 'none'; if (modal) modal.style.display = 'none';
+  const overlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('attendanceModal');
+  if (overlay) overlay.style.display = 'none';
+  if (modal) modal.style.display = 'none';
   selectedStudentId = null;
 };
 
 window.loadAttendanceMonth = async function () {
-  const mp = document.getElementById('monthPicker'); const month = mp?.value;
+  const mp = document.getElementById('monthPicker');
+  const month = mp?.value; // "YYYY-MM"
   if (!selectedStudentId) return;
-  const snap = await get(ref(db, `students/${selectedStudentId}`));
-  const student = snap.val() || {};
-  const attendance = student.attendance || {};
-  const table = document.getElementById('attendanceMonthTable'); if (!table) return;
-  table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr>`;
-  if (!month) {
-    for (const d in attendance) {
-      const r = table.insertRow(); r.insertCell(0).innerText = d; r.insertCell(1).innerText = attendance[d];
-      const p = r.insertCell(2).appendChild(document.createElement('button')); p.innerText='Present'; p.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${d}`),'present');
-      const a = r.insertCell(3).appendChild(document.createElement('button')); a.innerText='Absent'; a.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${d}`),'absent');
+  try {
+    const snap = await get(ref(db, `students/${selectedStudentId}`));
+    const student = snap.val() || {};
+    const attendance = student.attendance || {};
+    const table = document.getElementById('attendanceMonthTable');
+    if (!table) return;
+
+    table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr>`;
+
+    if (!month) {
+      // render existing entries
+      Object.keys(attendance).sort().forEach(date => {
+        const status = attendance[date];
+        const r = table.insertRow();
+        r.insertCell(0).innerText = date;
+        r.insertCell(1).innerText = status || '-';
+        const p = r.insertCell(2).appendChild(document.createElement('button'));
+        p.innerText = 'Present'; p.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${date}`), 'present'); loadAttendanceMonth(); };
+        const a = r.insertCell(3).appendChild(document.createElement('button'));
+        a.innerText = 'Absent'; a.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${date}`), 'absent'); loadAttendanceMonth(); };
+      });
+      return;
     }
-    return;
-  }
-  const [y, m] = month.split('-').map(Number); const days = new Date(y, m, 0).getDate();
-  for (let d=1; d<=days; d++) {
-    const dd = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const st = attendance[dd] || '';
-    const r = table.insertRow(); r.insertCell(0).innerText = dd; r.insertCell(1).innerText = st || '-';
-    const pcell = r.insertCell(2); const pbtn = document.createElement('button'); pbtn.innerText='Present'; pbtn.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${dd}`),'present'); pcell.appendChild(pbtn);
-    const acell = r.insertCell(3); const abtn = document.createElement('button'); abtn.innerText='Absent'; abtn.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${dd}`),'absent'); acell.appendChild(abtn);
+
+    // build days of month
+    const [y, m] = month.split('-').map(Number);
+    if (!y || !m) return;
+
+    const daysInMonth = new Date(y, m, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const status = attendance[dd] || '';
+      const r = table.insertRow();
+      r.insertCell(0).innerText = dd;
+      const statusCell = r.insertCell(1); statusCell.innerText = status || '-';
+
+      const pcell = r.insertCell(2);
+      const pbtn = document.createElement('button'); pbtn.innerText = 'Present';
+      pbtn.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${dd}`), 'present'); loadAttendanceMonth(); };
+      pcell.appendChild(pbtn);
+
+      const acell = r.insertCell(3);
+      const abtn = document.createElement('button'); abtn.innerText = 'Absent';
+      abtn.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${dd}`), 'absent'); loadAttendanceMonth(); };
+      acell.appendChild(abtn);
+
+      if (status === 'present') statusCell.style.color = 'lightgreen';
+      if (status === 'absent') statusCell.style.color = '#ff7b7b';
+    }
+  } catch (err) {
+    console.error('loadAttendanceMonth error', err);
   }
 };
 
-/* ----------------- Mark Attendance page ----------------- */
+/* ======================
+   Mark Attendance page (separate page flow)
+   ====================== */
+
 window.initMarkAttendancePage = async function () {
   if (!auth.currentUser) { setTimeout(window.initMarkAttendancePage, 300); return; }
+
   selectedStudentId = localStorage.getItem('selectedStudentId') || null;
-  if (!selectedStudentId) { alert('No student selected.'); window.location.href='dashboard.html'; return; }
-  const snap = await get(ref(db, `students/${selectedStudentId}`));
-  const student = snap.val() || {};
-  document.getElementById('studentNameLabel').innerText = student.name || '';
-  const today = new Date(); const defMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
-  const mp = document.getElementById('monthPickerMark'); if (mp) mp.value = defMonth;
-  await loadMarkAttendanceMonth();
+  if (!selectedStudentId) { alert('No student selected. Go to dashboard and click "Mark Attendance".'); window.location.href = 'dashboard.html'; return; }
+
+  // fetch student
+  try {
+    const snap = await get(ref(db, `students/${selectedStudentId}`));
+    const student = snap.val() || {};
+    document.getElementById('studentNameLabel').innerText = student.name || '';
+    // set default month
+    const now = new Date();
+    const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const mp = document.getElementById('monthPickerMark');
+    if (mp) mp.value = defaultMonth;
+    await loadMarkAttendanceMonth();
+  } catch (err) {
+    console.error('initMarkAttendancePage error', err);
+    alert('Failed to load student');
+    window.location.href = 'dashboard.html';
+  }
 };
 
 window.loadMarkAttendanceMonth = async function () {
-  const mp = document.getElementById('monthPickerMark'); const month = mp?.value;
+  const mp = document.getElementById('monthPickerMark');
+  const month = mp?.value;
   if (!selectedStudentId) return;
-  const snap = await get(ref(db, `students/${selectedStudentId}`));
-  const student = snap.val() || {}; const attendance = student.attendance || {};
-  const table = document.getElementById('markAttendanceTable'); if (!table) return;
-  table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr>`;
-  const [y,m] = (month||'').split('-').map(Number);
-  if (!y||!m) {
-    for (const d in attendance) {
-      const r=table.insertRow(); r.insertCell(0).innerText=d; r.insertCell(1).innerText=attendance[d];
-      const p=r.insertCell(2).appendChild(document.createElement('button')); p.innerText='Present'; p.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${d}`),'present');
-      const a=r.insertCell(3).appendChild(document.createElement('button')); a.innerText='Absent'; a.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${d}`),'absent');
+
+  try {
+    const snap = await get(ref(db, `students/${selectedStudentId}`));
+    const student = snap.val() || {};
+    const attendance = student.attendance || {};
+    const table = document.getElementById('markAttendanceTable');
+    if (!table) return;
+
+    table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr>`;
+
+    const [y, m] = (month || '').split('-').map(Number);
+    if (!y || !m) {
+      // show existing entries only
+      Object.keys(attendance).sort().forEach(date => {
+        const status = attendance[date];
+        const r = table.insertRow();
+        r.insertCell(0).innerText = date;
+        r.insertCell(1).innerText = status || '-';
+        const p = r.insertCell(2).appendChild(document.createElement('button'));
+        p.innerText = 'Present'; p.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${date}`), 'present'); loadMarkAttendanceMonth(); };
+        const a = r.insertCell(3).appendChild(document.createElement('button'));
+        a.innerText = 'Absent'; a.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${date}`), 'absent'); loadMarkAttendanceMonth(); };
+      });
+      return;
     }
-    return;
-  }
-  const days = new Date(y,m,0).getDate();
-  for (let d=1; d<=days; d++) {
-    const dd=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const st=attendance[dd]||'';
-    const r=table.insertRow(); r.insertCell(0).innerText=dd; r.insertCell(1).innerText=st||'-';
-    const p=r.insertCell(2).appendChild(document.createElement('button')); p.innerText='Present'; p.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${dd}`),'present');
-    const a=r.insertCell(3).appendChild(document.createElement('button')); a.innerText='Absent'; a.onclick=()=>set(ref(db,`students/${selectedStudentId}/attendance/${dd}`),'absent');
+
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+      const dd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const status = attendance[dd] || '';
+      const r = table.insertRow();
+      r.insertCell(0).innerText = dd;
+      const stCell = r.insertCell(1); stCell.innerText = status || '-';
+      const p = r.insertCell(2).appendChild(document.createElement('button'));
+      p.innerText = 'Present'; p.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${dd}`), 'present'); loadMarkAttendanceMonth(); };
+      const a = r.insertCell(3).appendChild(document.createElement('button'));
+      a.innerText = 'Absent'; a.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${dd}`), 'absent'); loadMarkAttendanceMonth(); };
+      if (status === 'present') stCell.style.color = 'lightgreen';
+      if (status === 'absent') stCell.style.color = '#ff7b7b';
+    }
+  } catch (err) {
+    console.error('loadMarkAttendanceMonth error', err);
   }
 };
 
-/* ----------------- Print report ----------------- */
+/* ======================
+   Print monthly report (modal or mark-attendance page)
+   ====================== */
 window.printReport = function () {
   const table = document.getElementById('markAttendanceTable') || document.getElementById('attendanceMonthTable');
   if (!table) return alert('Nothing to print');
-  const w = window.open('','print','width=900,height=700');
-  const title = document.getElementById('studentNameLabel')?.innerText || document.getElementById('modalStudentName')?.innerText || 'Report';
+  const w = window.open('', '', 'width=900,height=700');
+  const title = (document.getElementById('studentNameLabel')?.innerText) || (document.getElementById('modalStudentName')?.innerText) || 'Attendance Report';
   w.document.write(`<h3>Monthly Attendance Report — ${title}</h3>`);
   w.document.write(table.outerHTML);
-  w.document.close(); w.print();
+  w.document.close();
+  w.print();
 };
 
-/* ----------------- Top bunkers ----------------- */
+/* ======================
+   Top bunkers page
+   ====================== */
 window.initTopBunkersPage = async function () {
-  if (!auth.currentUser) { setTimeout(window.initTopBunkersPage,300); return; }
-  const snap = await get(ref(db, 'students'));
-  const data = snap.val() || {};
-  const list = [];
-  for (const id in data) {
-    const s = data[id];
-    if (s.teacher !== auth.currentUser.uid) continue;
-    const absentCount = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
-    if (absentCount > 0) list.push({...s, id, totalAbsent: absentCount});
+  if (!auth.currentUser) { setTimeout(window.initTopBunkersPage, 300); return; }
+  try {
+    const snap = await get(ref(db, 'students'));
+    const data = snap.val() || {};
+    const bunkers = [];
+    for (const id in data) {
+      const s = data[id];
+      if (!s) continue;
+      if (s.teacher !== auth.currentUser.uid) continue;
+      const absentCount = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
+      if (absentCount > 0) bunkers.push({ id, ...s, totalAbsent: absentCount });
+    }
+    bunkers.sort((a, b) => b.totalAbsent - a.totalAbsent);
+    const table = document.getElementById('bunkersTable');
+    if (!table) return;
+    table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>`;
+    bunkers.forEach(s => {
+      const r = table.insertRow();
+      r.insertCell(0).innerText = s.name;
+      r.insertCell(1).innerText = s.class;
+      r.insertCell(2).innerText = s.subject;
+      const cell = r.insertCell(3); cell.innerText = s.totalAbsent;
+      if (s.totalAbsent >= 3) cell.classList.add('top-bunker');
+    });
+  } catch (err) {
+    console.error('initTopBunkersPage error', err);
   }
-  list.sort((a,b)=>b.totalAbsent - a.totalAbsent);
-  const table = document.getElementById('bunkersTable'); if (!table) return;
-  table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>`;
-  list.forEach(s => {
-    const r = table.insertRow(); r.insertCell(0).innerText=s.name; r.insertCell(1).innerText=s.class; r.insertCell(2).innerText=s.subject;
-    const cell = r.insertCell(3); cell.innerText = s.totalAbsent; if (s.totalAbsent>=3) cell.classList.add('top-bunker');
-  });
 };
 
-/* ----------------- Helpers ----------------- */
+/* ======================
+   Helpers
+   ====================== */
+
+// Quick helper used in dashboard to jump to mark attendance for first student in selected class
 window.goToMarkAttendance = function () {
-  // If a class selected, go to first student mark flow or dashboard modal
-  if (!currentClassFilter) return alert('Select class first');
-  // choose first student in that class as quick flow: store id and go
+  if (!currentClassFilter) return alert('Select a class first');
   for (const id in allStudents) {
     const s = allStudents[id];
-    if (s.class === currentClassFilter && s.teacher === auth.currentUser.uid) {
+    if (s && s.class === currentClassFilter && s.teacher === auth.currentUser.uid) {
       localStorage.setItem('selectedStudentId', id);
       window.location.href = 'mark-attendance.html';
       return;
