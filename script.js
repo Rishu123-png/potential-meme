@@ -1,7 +1,7 @@
 // ======================= Firebase Setup =======================
 import { auth, db } from "./firebase.js"; 
 import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { ref, set, push, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
 // ======================= Global Variables =======================
 let currentTeacher = null;
@@ -9,7 +9,7 @@ let allStudents = {};
 let teacherSubject = "";
 let selectedStudentId = null;
 
-// ======================= Page Helper =========================
+// ======================= Page Management =======================
 window.onload = function() {
     showPage("loginPage");
     document.getElementById("attendanceModal").classList.add("hidden");
@@ -21,7 +21,6 @@ function showPage(pageId) {
     pages.forEach(id => document.getElementById(id).classList.add("hidden"));
     document.getElementById(pageId).classList.remove("hidden");
 
-    // Logout button visible only after login
     document.getElementById("logoutBtn").style.display = (pageId !== "loginPage") ? "block" : "none";
 }
 
@@ -35,8 +34,8 @@ window.login = function() {
     signInWithEmailAndPassword(auth, email, password)
         .then(userCredential => {
             currentTeacher = userCredential.user;
-            loadTeacherInfo();
-            showPage("dashboardPage");
+            showPage("dashboardPage"); // show dashboard only after login
+            loadTeacherInfo();          // load teacher info & students after login
         })
         .catch(error => alert(error.message));
 };
@@ -56,7 +55,7 @@ function loadTeacherInfo() {
         document.getElementById("teacherName").innerText = data.name || "Teacher";
         teacherSubject = data.subject || "";
         document.getElementById("teacherSubject").innerText = teacherSubject;
-        populateClasses(data.classes || {}); // classes object {11A: "11A", 11B: "11B"}
+        populateClasses(data.classes || {});
     });
 }
 
@@ -72,7 +71,7 @@ function populateClasses(classesObj) {
     }
 }
 
-// ======================= Show Pages ============================
+// ======================= Page Navigation =======================
 window.showAddStudentForm = function() {
     const selectedClass = document.getElementById("classFilter").value;
     document.getElementById("addStudentClass").innerText = selectedClass;
@@ -95,7 +94,7 @@ window.backToDashboard = function() {
     showPage("dashboardPage");
 };
 
-// ======================= Students CRUD ==========================
+// ======================= Add Student ==========================
 window.addStudent = function() {
     const name = document.getElementById("studentName").value.trim();
     const className = document.getElementById("addStudentClass").innerText;
@@ -124,7 +123,7 @@ function loadStudents(selectedClass) {
     });
 }
 
-// ======================= Display Attendance Table =================
+// ======================= Attendance Table ======================
 function displayAttendanceTable(selectedClass) {
     const table = document.getElementById("attendanceTable");
     table.innerHTML = "<tr><th>Name</th><th>Present</th><th>Absent</th><th>History</th></tr>";
@@ -163,7 +162,7 @@ function markAttendance(studentId, date, status) {
     loadStudents(document.getElementById("classFilter").value);
 }
 
-// ======================= Attendance History Modal =================
+// ======================= Attendance History =====================
 function openAttendanceModal(studentId) {
     selectedStudentId = studentId;
     const student = allStudents[studentId];
@@ -180,7 +179,7 @@ window.closeModal = function() {
 
 window.loadAttendanceMonth = function() {
     if(!selectedStudentId) return;
-    const month = document.getElementById("monthPicker").value; // YYYY-MM
+    const month = document.getElementById("monthPicker").value;
     const table = document.getElementById("attendanceMonthTable");
     table.innerHTML = "<tr><th>Date</th><th>Status</th></tr>";
 
@@ -203,9 +202,10 @@ window.printReport = function() {
 
 // ======================= Top Bunkers =========================
 function displayBunkingReport() {
-    const table = document.getElementById("bunkingTable");
+    const table = document.getElementById("bunkersTable");
     table.innerHTML = "<tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>";
     const bunkers = [];
+
     for(let id in allStudents){
         const student = allStudents[id];
         if(student.subject !== teacherSubject) continue;
