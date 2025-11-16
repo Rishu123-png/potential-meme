@@ -9,97 +9,77 @@
 </head>
 <body>
 
-<!-- ======================= LOGIN PAGE ======================= -->
-<div id="loginPage" class="auth-card">
-    <h2>Teacher Login / Signup</h2>
+<!-- =================== LOGIN PAGE =================== -->
+<div id="loginPage" class="page">
+  <h1>School Attendance</h1>
+  <div class="auth-card">
     <input type="email" id="email" placeholder="Email"><br>
     <input type="password" id="password" placeholder="Password"><br>
     <button onclick="login()">Login</button>
     <button onclick="signup()">Sign Up</button>
+    <p class="msg" id="loginMsg"></p>
+  </div>
 </div>
 
-<!-- ======================= DASHBOARD PAGE ======================= -->
-<div id="dashboardPage" class="hidden dashboard">
+<!-- =================== DASHBOARD PAGE =================== -->
+<div id="dashboardPage" class="page hidden">
+  <div class="dashboard">
     <div class="teacher-header">
-        <h2>Welcome <span id="teacherName"></span></h2>
-        <button onclick="logout()">Logout</button>
+      <h2>Welcome <span id="teacherName"></span></h2>
+      <button onclick="logout()" class="logoutBtn">Logout</button>
     </div>
-
-    <hr>
 
     <!-- Subject Filter -->
-    <div class="controls">
-        <label>Filter by Subject:</label>
-        <select id="subjectFilter" onchange="loadStudents()"></select>
-    </div>
+    <label for="subjectFilter">Filter Students by Subject:</label>
+    <select id="subjectFilter" onchange="loadStudents()"></select>
 
     <!-- Tabs -->
     <div id="tabs">
-        <button onclick="showTab('studentsTab')">Students</button>
-        <button onclick="showTab('bunkingTab')">Top Bunkers</button>
+      <button onclick="showTab('studentsTab')">Students</button>
+      <button onclick="showTab('attendanceTab')">Attendance</button>
+      <button onclick="showTab('bunkersTab')">Top Bunkers</button>
     </div>
 
-    <!-- ======================= STUDENTS TAB ======================= -->
+    <!-- =================== STUDENTS TAB =================== -->
     <div id="studentsTab" class="tabContent">
-        <h3>Add Student</h3>
-        <input type="text" id="studentName" placeholder="Student Name">
-        <input type="text" id="studentClass" placeholder="Class">
-        <select id="subjectFilterAdd"></select>
-        <button onclick="addStudent()">Add Student</button>
+      <h3>Add Student</h3>
+      <input type="text" id="studentName" placeholder="Student Name">
+      <input type="text" id="studentClass" placeholder="Class">
+      <select id="subjectFilterAdd"></select>
+      <button onclick="addStudent()">Add Student</button>
 
-        <h3>Student List</h3>
-        <table id="studentsTable">
-            <tr>
-                <th>Name</th>
-                <th>Class</th>
-                <th>Subject</th>
-                <th>Absences</th>
-                <th>Edit</th>
-                <th>Delete</th>
-                <th>Attendance</th>
-            </tr>
-        </table>
-    </div>
-
-    <!-- ======================= BUNKERS TAB ======================= -->
-    <div id="bunkingTab" class="tabContent hidden">
-        <h3>Top Bunkers</h3>
-        <table id="bunkingTable">
-            <tr>
-                <th>Name</th>
-                <th>Class</th>
-                <th>Subject</th>
-                <th>Absences</th>
-            </tr>
-        </table>
-    </div>
-</div>
-
-<!-- ======================= ATTENDANCE MODAL ======================= -->
-<div id="attendanceModal" class="hidden auth-card">
-    <h3>Attendance for <span id="modalStudentName"></span></h3>
-    <label>Select Month:</label>
-    <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
-
-    <h4>Attendance Table</h4>
-    <table id="attendanceTable">
+      <h3>All Students</h3>
+      <table id="studentsTable">
         <tr>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Mark Present</th>
-            <th>Mark Absent</th>
+          <th>Name</th><th>Class</th><th>Subject</th><th>Attendance</th><th>Edit</th><th>Delete</th>
         </tr>
-    </table>
+      </table>
+    </div>
 
-    <h4>Calendar View</h4>
-    <div id="calendarContainer"></div>
+    <!-- =================== ATTENDANCE TAB =================== -->
+    <div id="attendanceTab" class="tabContent hidden">
+      <h3>Attendance History for <span id="modalStudentName"></span></h3>
+      <label for="monthPicker">Select Month:</label>
+      <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
 
-    <button onclick="printReport()">Print Monthly Report</button>
-    <button onclick="closeModal()">Close</button>
+      <table id="attendanceTable">
+        <tr>
+          <th>Date</th><th>Status</th><th>Mark Present</th><th>Mark Absent</th>
+        </tr>
+      </table>
+
+      <button onclick="printReport()">Print Monthly Report</button>
+    </div>
+
+    <!-- =================== TOP BUNKERS TAB =================== -->
+    <div id="bunkersTab" class="tabContent hidden">
+      <h3>Top Bunkers</h3>
+      <table id="bunkingTable">
+        <tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>
+      </table>
+    </div>
+  </div>
 </div>
 
-<div id="modalOverlay" class="hidden"></div>
-
-<footer>Developed by Rishu Jaswar</footer>
 </body>
 </html>
