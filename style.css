@@ -172,3 +172,36 @@ th, td {
   color: #b388ff;
   text-shadow: 0 0 10px rgba(179, 136, 255, 0.6);
 }
+/* Print-specific styling */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .hidden, #loginDiv, #tabs button, #controls {
+    display: none !important; /* hide unnecessary UI */
+  }
+
+  table {
+    color: #000;
+    border: 1px solid #000;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 6px;
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #000;
+    font-size: 12px;
+    letter-spacing: 0;
+    text-shadow: none;
+  }
+}
