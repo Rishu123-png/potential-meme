@@ -1,5 +1,3 @@
-/* 🌌 Aesthetic Tech-Themed Style for School Attendance System */
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 body {
@@ -15,136 +13,86 @@ body {
     animation: bgAnimation 10s ease-in-out infinite alternate;
 }
 
-/* 🔮 Smooth animated background glow */
 @keyframes bgAnimation {
-    0% {
-        background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
-    }
-    50% {
-        background: radial-gradient(circle at bottom right, #181824, #101020 60%);
-    }
-    100% {
-        background: radial-gradient(circle at top right, #12121c, #0a0a14 60%);
-    }
+    0% {background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);}
+    50% {background: radial-gradient(circle at bottom right, #181824, #101020 60%);}
+    100% {background: radial-gradient(circle at top right, #12121c, #0a0a14 60%);}
 }
 
-/* ✨ Cards for login, dashboard, modal */
-.auth-card, .dashboard {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
+/* LOGIN PAGE MOBILE STYLE */
+#loginPage {
+    max-width: 400px;
+    width: 90%;
+    margin: 100px auto 0 auto;
+    padding: 40px;
+    background: rgba(255,255,255,0.05);
     border-radius: 20px;
-    padding: 30px;
-    width: 90%;
-    max-width: 700px;
-    margin-top: 30px;
-    box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
-    transition: box-shadow 0.3s ease;
+    backdrop-filter: blur(15px);
+    text-align: center;
 }
 
-.auth-card:hover, .dashboard:hover {
-    box-shadow: 0 0 40px rgba(173, 216, 230, 0.6);
-}
-
-/* 🔘 Inputs and Buttons */
-input, select {
-    width: 90%;
+#loginPage input, #loginPage select {
+    width: 80%;
+    margin: 10px 0;
+    font-size: 16px;
     padding: 10px;
-    margin: 8px 0;
-    border: none;
     border-radius: 8px;
-    outline: none;
-    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    background: rgba(255,255,255,0.1);
     color: #fff;
-    transition: background 0.3s ease;
 }
 
-input:focus, select:focus {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-button {
-    width: 95%;
-    padding: 10px;
-    background: linear-gradient(135deg, #3f51b5, #673ab7);
+#loginPage button {
+    width: 80%;
+    margin: 10px 0;
+    font-size: 16px;
+    background: linear-gradient(135deg,#3f51b5,#673ab7);
     color: white;
     border: none;
     border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 10px;
-    box-shadow: 0 0 15px rgba(103, 58, 183, 0.4);
-    transition: background 0.3s, transform 0.2s;
 }
 
-button:hover {
-    background: linear-gradient(135deg, #5c6bc0, #7e57c2);
-    transform: translateY(-2px);
+/* DASHBOARD */
+.dashboard {
+    max-width: 450px;
+    width: 90%;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    background: rgba(255,255,255,0.05);
 }
 
-/* ✨ Links and messages */
-a {
-    color: #a7a7ff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-.msg {
-    color: #ffe;
-    font-size: 14px;
-    min-height: 20px;
-}
-
-/* 📋 Dashboard and tabs */
-.dashboard h2 {
-    margin: 0;
-}
-
-.controls {
+.teacher-header {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 20px 0;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.tabContent {
-    margin-top: 20px;
+.controls, #tabs {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
 }
 
-.hidden {
-    display: none;
-}
-
-/* 🧑‍🎓 Student list table styling */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: #fff;
-    margin-top: 10px;
-}
-
-th, td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+select {
     padding: 8px;
-    text-align: left;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
 }
 
-.student-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
+/* TABS */
+.tabContent {margin-top: 20px;}
+.hidden {display: none;}
 
-/* Edit & Delete buttons inside table */
-table button {
-    width: auto;
-    padding: 5px 10px;
-    font-size: 12px;
-    margin: 0;
-}
+/* TABLES */
+table {width: 100%; border-collapse: collapse; margin-top: 10px;}
+th, td {border-bottom: 1px solid rgba(255,255,255,0.1); padding: 6px; text-align: left;}
+table button {padding: 5px 8px; font-size: 12px; margin: 0;}
 
-/* Attendance modal */
+/* ATTENDANCE MODAL */
 #attendanceModal {
     position: fixed;
     top: 50%;
@@ -152,44 +100,32 @@ table button {
     transform: translate(-50%, -50%);
     z-index: 1001;
     width: 90%;
-    max-width: 600px;
+    max-width: 500px;
 }
 
 #modalOverlay {
-    z-index: 1000;
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.5);
+    z-index:1000;
 }
 
-/* Footer styling */
-footer {
-    font-family: "Poppins", sans-serif;
-    letter-spacing: 0.5px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 20px;
-}
-
-/* Highlight top bunkers */
-.bunkers-high td:nth-child(4) {
-    color: red;
-    font-weight: bold;
-}
-
-/* Calendar container */
 #calendarContainer div {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     margin: 2px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content:center;
+    align-items:center;
     background: rgba(255,255,255,0.1);
     border-radius: 5px;
 }
 
-#calendarContainer div.present {
-    background: green;
-}
+#calendarContainer div.present {background: green;}
+#calendarContainer div.absent {background: red;}
 
-#calendarContainer div.absent {
-    background: red;
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #ccc;
 }
