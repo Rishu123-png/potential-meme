@@ -7,28 +7,41 @@
 <link rel="stylesheet" href="style.css">
 <script type="module" src="script.js"></script>
 </head>
-<body onload="loadTeacherProfile()">
+<body>
 
-<div class="container">
-  <h2>Welcome, <span id="teacherName"></span></h2>
-  <p>Subject: <span id="teacherSubject"></span></p>
-  <button onclick="logout()">Logout</button>
-  
-  <h3>Choose Class</h3>
-  <select id="classSelect" onchange="loadStudents(this.value)"></select>
-  
-  <button onclick="window.location.href='add-students.html'">Add Students</button>
-  <button onclick="window.location.href='top-bunkers.html'">Top Bunkers</button>
-  
-  <h3>Students List</h3>
-  <table id="studentsTable">
-    <tr>
-      <th>Name</th>
-      <th>Class</th>
-      <th>Attendance</th>
-      <th>Actions</th>
-    </tr>
-  </table>
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h2>Welcome <span id="teacherName"></span></h2>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="class-select">
+    <label>Select Class:</label>
+    <select id="classSelect" onchange="loadStudents()">
+      <option value="">--Select Class--</option>
+    </select>
+  </div>
+
+  <button onclick="showAddStudentForm()">Add Student</button>
+  <button onclick="showTopBunkers()">Top Bunkers</button>
+
+  <div id="addStudentForm" class="hidden">
+    <h3>Add Student</h3>
+    <input type="text" id="studentName" placeholder="Student Name">
+    <input type="text" id="studentClassInput" placeholder="Class">
+    <button onclick="addStudent()">Save Student</button>
+    <button onclick="closeAddStudentForm()">Cancel</button>
+  </div>
+
+  <div id="studentsList"></div>
+
+  <div id="attendanceModal" class="hidden">
+    <h3>Attendance for <span id="modalStudentName"></span></h3>
+    <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
+    <div id="attendanceTableContainer"></div>
+    <button onclick="printReport()">Print Report</button>
+    <button onclick="closeModal()">Close</button>
+  </div>
 </div>
 
 </body>
