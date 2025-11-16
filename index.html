@@ -3,83 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Attendance System</title>
+<title>School Attendance</title>
 <link rel="stylesheet" href="style.css">
 <script type="module" src="script.js"></script>
 </head>
 <body>
 
-<!-- =================== LOGIN PAGE =================== -->
-<div id="loginPage" class="page">
-  <h1>School Attendance</h1>
-  <div class="auth-card">
-    <input type="email" id="email" placeholder="Email"><br>
-    <input type="password" id="password" placeholder="Password"><br>
-    <button onclick="login()">Login</button>
-    <button onclick="signup()">Sign Up</button>
-    <p class="msg" id="loginMsg"></p>
-  </div>
+<!-- LOGIN -->
+<div id="loginDiv">
+<h2>Teacher Login</h2>
+<input type="email" id="loginEmail" placeholder="Email">
+<input type="password" id="loginPassword" placeholder="Password">
+<button onclick="login()">Login</button>
+<p>or <a href="#" onclick="document.getElementById('loginDiv').classList.add('hidden');document.getElementById('signupDiv').classList.remove('hidden')">Sign Up</a></p>
 </div>
 
-<!-- =================== DASHBOARD PAGE =================== -->
-<div id="dashboardPage" class="page hidden">
-  <div class="dashboard">
-    <div class="teacher-header">
-      <h2>Welcome <span id="teacherName"></span></h2>
-      <button onclick="logout()" class="logoutBtn">Logout</button>
-    </div>
-
-    <!-- Subject Filter -->
-    <label for="subjectFilter">Filter Students by Subject:</label>
-    <select id="subjectFilter" onchange="loadStudents()"></select>
-
-    <!-- Tabs -->
-    <div id="tabs">
-      <button onclick="showTab('studentsTab')">Students</button>
-      <button onclick="showTab('attendanceTab')">Attendance</button>
-      <button onclick="showTab('bunkersTab')">Top Bunkers</button>
-    </div>
-
-    <!-- =================== STUDENTS TAB =================== -->
-    <div id="studentsTab" class="tabContent">
-      <h3>Add Student</h3>
-      <input type="text" id="studentName" placeholder="Student Name">
-      <input type="text" id="studentClass" placeholder="Class">
-      <select id="subjectFilterAdd"></select>
-      <button onclick="addStudent()">Add Student</button>
-
-      <h3>All Students</h3>
-      <table id="studentsTable">
-        <tr>
-          <th>Name</th><th>Class</th><th>Subject</th><th>Attendance</th><th>Edit</th><th>Delete</th>
-        </tr>
-      </table>
-    </div>
-
-    <!-- =================== ATTENDANCE TAB =================== -->
-    <div id="attendanceTab" class="tabContent hidden">
-      <h3>Attendance History for <span id="modalStudentName"></span></h3>
-      <label for="monthPicker">Select Month:</label>
-      <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
-
-      <table id="attendanceTable">
-        <tr>
-          <th>Date</th><th>Status</th><th>Mark Present</th><th>Mark Absent</th>
-        </tr>
-      </table>
-
-      <button onclick="printReport()">Print Monthly Report</button>
-    </div>
-
-    <!-- =================== TOP BUNKERS TAB =================== -->
-    <div id="bunkersTab" class="tabContent hidden">
-      <h3>Top Bunkers</h3>
-      <table id="bunkingTable">
-        <tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>
-      </table>
-    </div>
-  </div>
+<!-- SIGNUP -->
+<div id="signupDiv" class="hidden">
+<h2>Teacher Signup</h2>
+<input type="text" id="signupName" placeholder="Name">
+<input type="email" id="signupEmail" placeholder="Email">
+<input type="password" id="signupPassword" placeholder="Password">
+<input type="text" id="signupSubject" placeholder="Subject (AI, Math etc)">
+<input type="text" id="signupClasses" placeholder="Classes (comma separated)">
+<button onclick="signup()">Sign Up</button>
+<p>or <a href="#" onclick="document.getElementById('signupDiv').classList.add('hidden');document.getElementById('loginDiv').classList.remove('hidden')">Login</a></p>
 </div>
+
+<!-- DASHBOARD -->
+<div id="dashboardDiv" class="hidden">
+<h2>Welcome <span id="teacherNameDisplay"></span></h2>
+<p>Subject: <span id="teacherSubjectDisplay"></span></p>
+<button onclick="logout()">Logout</button>
+
+<h3>Filter by Class</h3>
+<select id="classFilter" onchange="loadStudents()"></select>
+
+<div id="tabs">
+<button onclick="showTab('studentsTab')">Students</button>
+<button onclick="showTab('bunkersTab')">Top Bunkers</button>
+</div>
+
+<!-- STUDENTS -->
+<div id="studentsTab">
+<h3>Add Student</h3>
+<input type="text" id="studentName" placeholder="Student Name">
+<select id="classFilterAdd"></select>
+<button onclick="addStudent()">Add Student</button>
+
+<h3>Students List</h3>
+<table id="studentsTable"></table>
+</div>
+
+<!-- TOP BUNKERS -->
+<div id="bunkersTab" class="hidden">
+<h3>Top Bunkers</h3>
+<table id="bunkingTable"></table>
+</div>
+</div>
+
+<!-- ATTENDANCE MODAL -->
+<div id="attendanceModal" class="hidden">
+<h3>Attendance for <span id="modalStudentName"></span></h3>
+<input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
+<table id="attendanceTable"></table>
+<button onclick="printReport()">Print Monthly Report</button>
+<button onclick="closeModal()">Close</button>
+</div>
+<div id="modalOverlay" class="hidden"></div>
 
 </body>
 </html>
