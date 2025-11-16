@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<!-- ======================= LOGIN PAGE ======================= -->
+<!-- ================= LOGIN PAGE ================= -->
 <div id="loginPage" class="page">
   <h2>Teacher Login</h2>
   <input type="email" id="email" placeholder="Email"><br>
@@ -17,22 +17,24 @@
   <button onclick="login()">Login</button>
 </div>
 
-<!-- ======================= DASHBOARD PAGE ======================= -->
+<!-- ================= DASHBOARD PAGE ================= -->
 <div id="dashboardPage" class="page hidden">
   <h2>Welcome <span id="teacherName"></span></h2>
   <p>Subject: <span id="teacherSubject"></span></p>
   
   <label>Select Class:</label>
-  <select id="classFilter"></select>
+  <select id="classFilter" onchange="loadStudents()"></select><br>
+
   <div class="dashboard-buttons">
-    <button onclick="showAddStudentForm()">Add Student</button>
-    <button onclick="showMarkAttendance()">Mark Attendance</button>
+    <button onclick="showAddStudentPage()">Add Student</button>
+    <button onclick="showAttendancePage()">Mark Attendance</button>
     <button onclick="showTopBunkers()">Top Bunkers</button>
   </div>
+  
   <button id="logoutBtn" onclick="logout()">Logout</button>
 </div>
 
-<!-- ======================= ADD STUDENT PAGE ======================= -->
+<!-- ================= ADD STUDENT PAGE ================= -->
 <div id="addStudentPage" class="page hidden">
   <h2>Add Student</h2>
   <p>Class: <span id="addStudentClass"></span></p>
@@ -42,9 +44,9 @@
   <button onclick="backToDashboard()">Back</button>
 </div>
 
-<!-- ======================= MARK ATTENDANCE PAGE ======================= -->
+<!-- ================= MARK ATTENDANCE PAGE ================= -->
 <div id="attendancePage" class="page hidden">
-  <h2>Mark Attendance</h2>
+  <h2>Mark Attendance - Class: <span id="attendanceClass"></span></h2>
   <table id="attendanceTable">
     <tr>
       <th>Name</th>
@@ -56,7 +58,7 @@
   <button onclick="backToDashboard()">Back</button>
 </div>
 
-<!-- ======================= ATTENDANCE HISTORY MODAL ======================= -->
+<!-- ================= ATTENDANCE HISTORY MODAL ================= -->
 <div id="attendanceModal" class="modal hidden">
   <h3>Attendance History for <span id="modalStudentName"></span></h3>
   <input type="month" id="monthPicker" onchange="loadAttendanceMonth()"><br><br>
@@ -68,14 +70,13 @@
 </div>
 <div id="modalOverlay" class="modal-overlay hidden"></div>
 
-<!-- ======================= TOP BUNKERS PAGE ======================= -->
+<!-- ================= TOP BUNKERS PAGE ================= -->
 <div id="bunkersPage" class="page hidden">
   <h2>Top Bunkers</h2>
   <table id="bunkersTable">
     <tr>
       <th>Name</th>
       <th>Class</th>
-      <th>Subject</th>
       <th>Absences</th>
     </tr>
   </table>
