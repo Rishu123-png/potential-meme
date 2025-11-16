@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Attendance</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="script.js"></script>
+</head>
+<body onload="loadAttendance()">
+
+<div class="container">
+  <h2>Mark Attendance</h2>
+  
+  <label>Select Month:</label>
+  <input type="month" id="monthPicker" onchange="loadAttendance()">
+  
+  <table id="attendanceTable">
+    <tr>
+      <th>Date</th>
+      <th>Status</th>
+      <th>Present</th>
+      <th>Absent</th>
+    </tr>
+  </table>
+  
+  <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+</body>
+</html>
