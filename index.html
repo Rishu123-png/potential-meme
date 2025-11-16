@@ -1,34 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>School Attendance - Login</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - School Attendance</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <div class="container">
-        <h1>Teacher Login</h1>
+  <div class="container" role="main">
+    <h1>Teacher Login</h1>
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="teacher@example.com" />
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="••••••••" />
+    <button id="loginBtn">Login</button>
+    <p class="footer">Developed by Rishu Jaswar</p>
+  </div>
 
-        <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="email" placeholder="Enter Email" required>
-        </div>
-
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Enter Password" required>
-        </div>
-
-        <button id="loginBtn">Login</button>
-
-        <p id="errorMsg" class="error"></p>
-    </div>
-
-    <!-- IMPORTANT: These MUST be modules -->
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="script.js"></script>
-
+  <!-- must be modules -->
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
