@@ -3,205 +3,193 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 body {
-  font-family: "Poppins", sans-serif;
-  background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
-  color: #fff;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: bgAnimation 10s ease-in-out infinite alternate;
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    animation: bgAnimation 10s ease-in-out infinite alternate;
 }
 
 /* 🔮 Smooth animated background glow */
 @keyframes bgAnimation {
-  0% {
-    background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
-  }
-  50% {
-    background: radial-gradient(circle at bottom right, #181824, #101020 60%);
-  }
-  100% {
-    background: radial-gradient(circle at top right, #12121c, #0a0a14 60%);
-  }
+    0% {
+        background: radial-gradient(circle at top left, #1a1a2e, #0f0f1f 60%);
+    }
+    50% {
+        background: radial-gradient(circle at bottom right, #181824, #101020 60%);
+    }
+    100% {
+        background: radial-gradient(circle at top right, #12121c, #0a0a14 60%);
+    }
 }
 
-/* ✨ Login/Signup Cards */
-.auth-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(15px);
-  border-radius: 20px;
-  padding: 35px;
-  width: 340px;
-  text-align: center;
-  box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
-  transition: box-shadow 0.3s ease;
+/* ✨ Cards for login, dashboard, modal */
+.auth-card, .dashboard {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 30px;
+    width: 90%;
+    max-width: 700px;
+    margin-top: 30px;
+    box-shadow: 0 0 30px rgba(138, 43, 226, 0.4);
+    transition: box-shadow 0.3s ease;
 }
 
-.auth-card:hover {
-  box-shadow: 0 0 40px rgba(173, 216, 230, 0.6);
+.auth-card:hover, .dashboard:hover {
+    box-shadow: 0 0 40px rgba(173, 216, 230, 0.6);
 }
 
 /* 🔘 Inputs and Buttons */
-input {
-  width: 90%;
-  padding: 10px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 8px;
-  outline: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  transition: background 0.3s ease;
+input, select {
+    width: 90%;
+    padding: 10px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 8px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transition: background 0.3s ease;
 }
 
-input:focus {
-  background: rgba(255, 255, 255, 0.2);
+input:focus, select:focus {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 button {
-  width: 95%;
-  padding: 10px;
-  background: linear-gradient(135deg, #3f51b5, #673ab7);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  margin-top: 10px;
-  box-shadow: 0 0 15px rgba(103, 58, 183, 0.4);
-  transition: background 0.3s, transform 0.2s;
+    width: 95%;
+    padding: 10px;
+    background: linear-gradient(135deg, #3f51b5, #673ab7);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+    box-shadow: 0 0 15px rgba(103, 58, 183, 0.4);
+    transition: background 0.3s, transform 0.2s;
 }
 
 button:hover {
-  background: linear-gradient(135deg, #5c6bc0, #7e57c2);
-  transform: translateY(-2px);
+    background: linear-gradient(135deg, #5c6bc0, #7e57c2);
+    transform: translateY(-2px);
 }
 
-/* ✨ Links and Messages */
+/* ✨ Links and messages */
 a {
-  color: #a7a7ff;
-  text-decoration: none;
-  font-weight: bold;
+    color: #a7a7ff;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 .msg {
-  color: #ffe;
-  font-size: 14px;
-  min-height: 20px;
+    color: #ffe;
+    font-size: 14px;
+    min-height: 20px;
 }
 
-/* 📋 Dashboard Section */
-.dashboard {
-  width: 90%;
-  max-width: 700px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  border-radius: 20px;
-  padding: 25px;
-  box-shadow: 0 0 25px rgba(138, 43, 226, 0.4);
-  backdrop-filter: blur(15px);
-}
-
-.teacher-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.teacher-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 2px solid #7e57c2;
+/* 📋 Dashboard and tabs */
+.dashboard h2 {
+    margin: 0;
 }
 
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
 }
 
-select, .logout {
-  padding: 8px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+.tabContent {
+    margin-top: 20px;
 }
 
-/* 🧑‍🎓 Student list styling */
-.student-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.hidden {
+    display: none;
 }
 
+/* 🧑‍🎓 Student list table styling */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #fff;
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+    margin-top: 10px;
 }
 
 th, td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px;
-  text-align: left;
-}
-.footer {
-  position: fixed;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-  font-family: "Poppins", sans-serif;
-  letter-spacing: 0.5px;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    text-align: left;
 }
 
-.footer:hover {
-  color: #b388ff;
-  text-shadow: 0 0 10px rgba(179, 136, 255, 0.6);
+.student-row:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
-/* Print-specific styling */
-@media print {
-  body {
-    background: #fff;
-    color: #000;
-  }
 
-  .hidden, #loginDiv, #tabs button, #controls {
-    display: none !important; /* hide unnecessary UI */
-  }
-
-  table {
-    color: #000;
-    border: 1px solid #000;
-  }
-
-  th, td {
-    border: 1px solid #000;
-    padding: 6px;
-  }
-
-  .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    color: #000;
+/* Edit & Delete buttons inside table */
+table button {
+    width: auto;
+    padding: 5px 10px;
     font-size: 12px;
-    letter-spacing: 0;
-    text-shadow: none;
-  }
+    margin: 0;
+}
+
+/* Attendance modal */
+#attendanceModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    width: 90%;
+    max-width: 600px;
+}
+
+#modalOverlay {
+    z-index: 1000;
+}
+
+/* Footer styling */
+footer {
+    font-family: "Poppins", sans-serif;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 20px;
+}
+
+/* Highlight top bunkers */
+.bunkers-high td:nth-child(4) {
+    color: red;
+    font-weight: bold;
+}
+
+/* Calendar container */
+#calendarContainer div {
+    width: 40px;
+    height: 40px;
+    margin: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+}
+
+#calendarContainer div.present {
+    background: green;
+}
+
+#calendarContainer div.absent {
+    background: red;
 }
