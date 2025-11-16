@@ -1,143 +1,196 @@
-// script.js
-import { auth, db } from './firebase.js';
-import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+// ======================= Firebase Setup =======================
+import { auth, db } from "./firebase.js";
+import { ref, get, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 let currentTeacher = null;
+let allStudents = {};
+let selectedStudentId = null;
 
-// ---------- LOGIN PAGE ----------
-export async function login() {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    currentTeacher = userCredential.user;
-    window.location.href = "dashboard.html";
-  } catch(e) {
-    alert(e.message);
-  }
-}
+// ======================= Auth & Profile ======================
+window.addEventListener('load', () => {
+    currentTeacher = auth.currentUser;
+});
 
-// ---------- LOGOUT ----------
-export function logout() {
-  signOut(auth).then(() => {
-    window.location.href = "index.html";
-  });
-}
-
-// ---------- DASHBOARD ----------
+// Load teacher profile, subject, classes
 export function loadTeacherProfile() {
-  const nameEl = document.getElementById('teacherName');
-  const subjectEl = document.getElementById('teacherSubject');
-  const classSelect = document.getElementById('classSelect');
-
-  const teacherRef = ref(db, 'teachers/' + currentTeacher.uid);
-  onValue(teacherRef, (snapshot) => {
-    const data = snapshot.val();
-    nameEl.innerText = data.name || "Teacher";
-    subjectEl.innerText = data.subject || "Subject not assigned";
-
-    // Populate classes dropdown
-    classSelect.innerHTML = "";
-    if (data.classes) {
-      for (let cls in data.classes) {
-        const opt = document.createElement('option');
-        opt.value = data.classes[cls];
-        opt.innerText = data.classes[cls];
-        classSelect.appendChild(opt);
-      }
+    currentTeacher = auth.currentUser;
+    if (!currentTeacher) {
+        alert("Please login first!");
+        window.location.href = "index.html";
+        return;
     }
-  });
+
+    const teacherRef = ref(db, `teachers/${currentTeacher.uid}`);
+    onValue(teacherRef, snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Dashboard
+        const teacherNameElem = document.getElementById("teacherName");
+        if (teacherNameElem) teacherNameElem.innerText = data.name || "Teacher";
+
+        // Subject
+        if (document.getElementById("teacherSubject"))
+            document.getElementById("teacherSubject").innerText = data.subject || "Subject";
+        if (document.getElementById("teacherSubjectAdd"))
+            document.getElementById("teacherSubjectAdd").innerText = data.subject || "Subject";
+
+        // Populate class dropdowns
+        const classSelects = ["classSelect", "classSelectAdd"];
+        classSelects.forEach(selId => {
+            const selectElem = document.getElementById(selId);
+            if (!selectElem || !data.classes) return;
+            selectElem.innerHTML = "";
+            for (let key in data.classes) {
+                const opt = document.createElement("option");
+                opt.value = data.classes[key];
+                opt.innerText = data.classes[key];
+                selectElem.appendChild(opt);
+            }
+        });
+    });
 }
 
-// ---------- ADD STUDENTS ----------
+// ======================= Students ===========================
+export function loadStudents(selectedClass = null) {
+    const studentsRef = ref(db, "students");
+    onValue(studentsRef, snapshot => {
+        allStudents = snapshot.val() || {};
+        const table = document.getElementById("studentsTable");
+        if (!table) return;
+
+        table.innerHTML = `
+        <tr>
+          <th>Name</th>
+          <th>Attendance</th>
+          <th>Actions</th>
+        </tr>`;
+
+        for (let id in allStudents) {
+            const s = allStudents[id];
+            if (s.teacher !== currentTeacher.uid) continue; // only this teacher
+            if (selectedClass && s.class !== selectedClass) continue;
+
+            const tr = table.insertRow();
+            tr.insertCell(0).innerText = s.name;
+            const totalAbsent = Object.values(s.attendance || {}).filter(v => v === "absent").length;
+            tr.insertCell(1).innerText = totalAbsent;
+
+            const actionCell = tr.insertCell(2);
+            const markBtn = document.createElement("button");
+            markBtn.innerText = "Mark Attendance";
+            markBtn.onclick = () => {
+                selectedStudentId = id;
+                window.location.href = "mark-attendance.html";
+            };
+            actionCell.appendChild(markBtn);
+        }
+    });
+}
+
+// ======================= Add Student ========================
 export function addStudent() {
-  const name = document.getElementById('studentName').value;
-  const cls = document.getElementById('classSelectAdd').value;
-  if (!name || !cls) return alert("Enter all fields");
-  const newRef = push(ref(db, 'students'));
-  set(newRef, {
-    name,
-    class: cls,
-    subject: document.getElementById('teacherSubjectAdd').innerText,
-    teacher: currentTeacher.uid,
-    attendance: {}
-  });
-  alert("Student added!");
-  document.getElementById('studentName').value = "";
+    const name = document.getElementById("studentName").value.trim();
+    const classSelect = document.getElementById("classSelectAdd").value;
+    if (!name || !classSelect) { alert("Enter name and select class"); return; }
+
+    const newStudentRef = push(ref(db, "students"));
+    set(newStudentRef, {
+        name,
+        class: classSelect,
+        subject: document.getElementById("teacherSubjectAdd").innerText,
+        teacher: currentTeacher.uid,
+        attendance: {}
+    });
+    document.getElementById("studentName").value = "";
+    alert("Student added!");
 }
 
-// ---------- LOAD STUDENTS ----------
-export function loadStudents(className) {
-  const table = document.getElementById('studentsTable');
-  table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Attendance</th><th>Actions</th></tr>`;
-  const studentsRef = ref(db, 'students');
-  onValue(studentsRef, (snapshot) => {
-    const data = snapshot.val() || {};
-    for (let id in data) {
-      const s = data[id];
-      if (s.class !== className || s.teacher !== currentTeacher.uid) continue;
-      const row = table.insertRow();
-      row.insertCell(0).innerText = s.name;
-      row.insertCell(1).innerText = s.class;
-      const totalAbsent = Object.values(s.attendance || {}).filter(a => a==="absent").length;
-      row.insertCell(2).innerText = totalAbsent;
-      const actions = row.insertCell(3);
-      const markBtn = document.createElement('button');
-      markBtn.innerText = "Mark Attendance";
-      markBtn.onclick = () => { localStorage.setItem("selectedClass", className); localStorage.setItem("selectedStudentId", id); window.location.href = "mark-attendance.html"; };
-      actions.appendChild(markBtn);
-    }
-  });
-}
-
-// ---------- MARK ATTENDANCE ----------
+// ======================= Attendance =========================
 export function loadAttendance() {
-  const studentId = localStorage.getItem("selectedStudentId");
-  const table = document.getElementById('attendanceTable');
-  table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr>`;
-  if (!studentId) return;
-  const studentRef = ref(db, 'students/' + studentId);
-  onValue(studentRef, (snapshot) => {
-    const s = snapshot.val();
-    const attendance = s.attendance || {};
-    for (let date in attendance) {
-      const row = table.insertRow();
-      row.insertCell(0).innerText = date;
-      row.insertCell(1).innerText = attendance[date];
-      const pBtn = row.insertCell(2).appendChild(document.createElement('button'));
-      pBtn.innerText = "Present";
-      pBtn.onclick = () => set(ref(db, 'students/' + studentId + '/attendance/' + date), 'present');
-      const aBtn = row.insertCell(3).appendChild(document.createElement('button'));
-      aBtn.innerText = "Absent";
-      aBtn.onclick = () => set(ref(db, 'students/' + studentId + '/attendance/' + date), 'absent');
+    if (!selectedStudentId) return;
+    const student = allStudents[selectedStudentId];
+    if (!student) return;
+
+    document.getElementById("monthPicker")?.valueAsDate || new Date();
+
+    const table = document.getElementById("attendanceTable");
+    if (!table) return;
+    table.innerHTML = `<tr>
+        <th>Date</th><th>Status</th><th>Present</th><th>Absent</th>
+    </tr>`;
+
+    const month = document.getElementById("monthPicker")?.value; // YYYY-MM
+    for (let date in student.attendance) {
+        if (month && !date.startsWith(month)) continue;
+        const row = table.insertRow();
+        row.insertCell(0).innerText = date;
+        row.insertCell(1).innerText = student.attendance[date];
+
+        const pBtn = row.insertCell(2).appendChild(document.createElement("button"));
+        pBtn.innerText = "Present";
+        pBtn.onclick = () => markAttendance(date, "present");
+
+        const aBtn = row.insertCell(3).appendChild(document.createElement("button"));
+        aBtn.innerText = "Absent";
+        aBtn.onclick = () => markAttendance(date, "absent");
     }
-  });
 }
 
-// ---------- TOP BUNKERS ----------
+export function markAttendance(date, status) {
+    if (!selectedStudentId) return;
+    const path = `students/${selectedStudentId}/attendance/${date}`;
+    set(ref(db, path), status);
+    alert(`Marked ${status} for ${date}`);
+    loadAttendance();
+}
+
+// ======================= Top Bunkers ========================
 export function loadTopBunkers() {
-  const table = document.getElementById('bunkersTable');
-  table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>`;
-  const studentsRef = ref(db, 'students');
-  onValue(studentsRef, (snapshot) => {
-    const data = snapshot.val() || {};
-    const bunkers = [];
-    for (let id in data) {
-      const s = data[id];
-      if (s.teacher !== currentTeacher.uid) continue;
-      const totalAbsent = Object.values(s.attendance || {}).filter(a => a==="absent").length;
-      if (totalAbsent>0) bunkers.push({name:s.name, class:s.class, subject:s.subject, totalAbsent});
-    }
-    bunkers.sort((a,b)=>b.totalAbsent - a.totalAbsent);
-    for (let s of bunkers) {
-      const row = table.insertRow();
-      row.insertCell(0).innerText = s.name;
-      row.insertCell(1).innerText = s.class;
-      row.insertCell(2).innerText = s.subject;
-      const cell = row.insertCell(3);
-      cell.innerText = s.totalAbsent;
-      if (s.totalAbsent>=3) cell.classList.add("top-bunker");
-    }
-  });
+    const table = document.getElementById("bunkersTable");
+    if (!table) return;
+    table.innerHTML = `<tr>
+        <th>Name</th><th>Class</th><th>Subject</th><th>Absences</th>
+    </tr>`;
+
+    onValue(ref(db, "students"), snapshot => {
+        const data = snapshot.val() || {};
+        const bunkers = [];
+        for (let id in data) {
+            const s = data[id];
+            if (s.teacher !== currentTeacher.uid) continue;
+            const totalAbsent = Object.values(s.attendance || {}).filter(v => v === "absent").length;
+            if (totalAbsent > 0) bunkers.push({...s, totalAbsent});
+        }
+        bunkers.sort((a,b)=> b.totalAbsent - a.totalAbsent);
+
+        bunkers.forEach(s => {
+            const row = table.insertRow();
+            row.insertCell(0).innerText = s.name;
+            row.insertCell(1).innerText = s.class;
+            row.insertCell(2).innerText = s.subject;
+            const c = row.insertCell(3);
+            c.innerText = s.totalAbsent;
+            if (s.totalAbsent >= 3) c.style.color = "red";
+        });
+    });
+}
+
+// ======================= Print Monthly Report ==================
+export function printReport() {
+    const table = document.getElementById("attendanceTable");
+    if (!table) return;
+    const w = window.open("", "", "width=800,height=600");
+    w.document.write("<h3>Monthly Attendance Report</h3>");
+    w.document.write(table.outerHTML);
+    w.document.close();
+    w.print();
+}
+
+// ======================= Logout =============================
+export function logout() {
+    signOut(auth).then(() => {
+        window.location.href = "index.html";
+    });
 }
