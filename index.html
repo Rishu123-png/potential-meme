@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>School Attendance System</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module" src="script.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Attendance System</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="script.js"></script>
 </head>
 <body>
 
@@ -55,6 +56,7 @@
                 <th>Absences</th>
                 <th>Edit</th>
                 <th>Delete</th>
+                <th>Attendance</th>
             </tr>
         </table>
     </div>
@@ -75,10 +77,10 @@
 
 <!-- ======================= ATTENDANCE MODAL ======================= -->
 <div id="attendanceModal" class="hidden auth-card">
-    <h3>Attendance History for <span id="modalStudentName"></span></h3>
+    <h3>Attendance for <span id="modalStudentName"></span></h3>
     <label>Select Month:</label>
     <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
-    
+
     <h4>Attendance Table</h4>
     <table id="attendanceTable">
         <tr>
@@ -96,11 +98,8 @@
     <button onclick="closeModal()">Close</button>
 </div>
 
-<!-- ======================= MODAL OVERLAY ======================= -->
 <div id="modalOverlay" class="hidden"></div>
 
-<!-- ======================= FOOTER ======================= -->
 <footer>Developed by Rishu Jaswar</footer>
-
 </body>
 </html>
