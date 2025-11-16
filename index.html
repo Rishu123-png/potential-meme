@@ -5,98 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>School Attendance System</title>
   <link rel="stylesheet" href="style.css">
-  <script type="module" src="script.js"></script>
+  <script type="module" src="script.js" defer></script>
 </head>
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- ================= Login Page ================= -->
 <div id="loginDiv" class="auth-card">
   <h2>Teacher Login</h2>
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
   <button onclick="login()">Login</button>
+  <div id="loginMsg" class="msg"></div>
 </div>
 
-<!-- DASHBOARD PAGE -->
+<!-- ================= Dashboard Page ================= -->
 <div id="dashboard" class="hidden dashboard">
   <div class="teacher-header">
-    <div>
-      <h2>Welcome, <span id="teacherName"></span></h2>
-      <p>Subject: <span id="teacherSubject"></span></p>
-    </div>
+    <h2>Welcome, <span id="teacherName"></span></h2>
     <button class="logout" onclick="logout()">Logout</button>
   </div>
 
-  <!-- CLASS FILTER -->
-  <h3>Choose Class:</h3>
-  <select id="classFilter"></select>
+  <div>
+    <label for="classFilter">Select Class:</label>
+    <select id="classFilter" onchange="loadStudents()"></select>
+  </div>
 
-  <!-- ADD STUDENT -->
-  <div class="add-student">
+  <div class="controls">
+    <button onclick="showAddStudentForm()">Add Student</button>
+    <button onclick="showMarkAttendance()">Mark Attendance</button>
+    <button onclick="showTopBunkers()">Top Bunkers</button>
+  </div>
+
+  <!-- Add Student Form -->
+  <div id="addStudentDiv" class="hidden">
+    <h3>Add Student</h3>
     <input type="text" id="studentName" placeholder="Student Name">
-    <select id="addClass">
-      <option value="">Select Class</option>
-      <option value="11A">11A</option>
-      <option value="11B">11B</option>
-      <option value="11C">11C</option>
-    </select>
-    <button onclick="addStudent()">Add Student</button>
+    <button onclick="addStudent()">Save Student</button>
   </div>
 
-  <!-- TABS -->
-  <div id="tabs" class="controls">
-    <button onclick="showTab('studentsTab')">Students</button>
-    <button onclick="showTab('bunkingTab')">Top Bunkers</button>
+  <!-- Students Table -->
+  <div id="studentsTableDiv" class="hidden">
+    <h3>Students List</h3>
+    <table id="studentsTable"></table>
   </div>
 
-  <!-- STUDENTS TABLE -->
-  <div id="studentsTab" class="tabContent">
-    <h3>Students</h3>
-    <table id="studentsTable">
-      <tr>
-        <th>Name</th>
-        <th>Class</th>
-        <th>Attendance</th>
-        <th>Edit</th>
-        <th>Delete</th>
-      </tr>
+  <!-- Attendance Modal -->
+  <div id="attendanceModal" class="hidden">
+    <h3>Attendance for <span id="attendanceClassName"></span> - <span id="teacherSubject"></span></h3>
+    <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
+    <table id="attendanceTable">
+      <tr><th>Date</th><th>Status</th><th>Mark Present</th><th>Mark Absent</th></tr>
     </table>
+    <button onclick="printReport()">Print Monthly Report</button>
+    <button onclick="closeModal()">Close</button>
   </div>
+  <div id="modalOverlay" class="hidden"></div>
 
-  <!-- BUNKERS TABLE -->
-  <div id="bunkingTab" class="tabContent hidden">
+  <!-- Top Bunkers -->
+  <div id="bunkersDiv" class="hidden">
     <h3>Top Bunkers</h3>
-    <table id="bunkingTable">
-      <tr>
-        <th>Name</th>
-        <th>Class</th>
-        <th>Absences</th>
-      </tr>
-    </table>
+    <table id="bunkingTable"></table>
   </div>
 </div>
 
-<!-- ATTENDANCE MODAL -->
-<div id="attendanceModal" class="hidden">
-  <h3>Attendance for <span id="modalStudentName"></span></h3>
-  <input type="month" id="monthPicker" onchange="loadAttendanceMonth()">
-  <table id="attendanceTable">
-    <tr>
-      <th>Date</th>
-      <th>Status</th>
-      <th>Mark Present</th>
-      <th>Mark Absent</th>
-    </tr>
-  </table>
-  <button onclick="closeModal()">Close</button>
-  <button onclick="printReport()">Print Report</button>
-</div>
-<div id="modalOverlay" class="hidden"></div>
-
-<!-- FOOTER -->
-<footer class="footer">
-  Developed by Rishu Jaswar
-</footer>
+<!-- Footer -->
+<footer class="footer">Developed by Rishu Jaswar</footer>
 
 </body>
 </html>
