@@ -1,138 +1,113 @@
-// ======================= Imports =======================
 import { auth, db } from './firebase.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { ref, set, push, get, child, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut 
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { 
+  ref, push, set, onValue, update, remove 
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-// ======================= Global Variables =======================
 let currentTeacher = null;
 let allStudents = {};
 let selectedStudentId = null;
 
-// ======================= Login/Signup =========================
+// ======================= Section Control ======================
+function showDashboard() {
+    document.getElementById("dashboard").classList.remove("hidden");
+    document.getElementById("loginDiv").classList.add("hidden");
+    document.getElementById("bunkersSection").classList.add("hidden");
+}
+
+function showBunkers() {
+    document.getElementById("bunkersSection").classList.remove("hidden");
+    document.getElementById("dashboard").classList.add("hidden");
+}
+
+// ======================= Login/Signup ======================
 window.signup = function() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-
     createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             const uid = userCredential.user.uid;
-            // Save teacher in DB
-            set(ref(db, 'teachers/' + uid), {
-                email: email,
-                name: "",
-                subjects: []
-            });
+            set(ref(db, 'teachers/' + uid), { email, name: "", subjects: [] });
             alert("Signup successful! Please enter your name & subject in dashboard.");
         })
-        .catch((error) => alert(error.message));
+        .catch(e => alert(e.message));
 }
 
 window.login = function() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-
     signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
             currentTeacher = userCredential.user;
-            document.getElementById("loginDiv").classList.add("hidden");
-            document.getElementById("dashboard").classList.remove("hidden");
-            loadTeacherInfo();
+            showDashboard();
+            loadTeacherData();
         })
-        .catch((error) => alert(error.message));
+        .catch(e => alert("Login failed: " + e.message));
 }
 
 window.logout = function() {
     signOut(auth).then(() => {
         currentTeacher = null;
-        document.getElementById("dashboard").classList.add("hidden");
         document.getElementById("loginDiv").classList.remove("hidden");
+        document.getElementById("dashboard").classList.add("hidden");
+        document.getElementById("bunkersSection").classList.add("hidden");
+        closeModal();
     });
 }
 
-// ======================= Load Teacher Info ======================
-function loadTeacherInfo() {
+// ======================= Load Teacher Data & Students ======================
+function loadTeacherData() {
     const teacherRef = ref(db, 'teachers/' + currentTeacher.uid);
-    onValue(teacherRef, (snapshot) => {
+    onValue(teacherRef, snapshot => {
         const data = snapshot.val();
-        document.getElementById("teacherName").innerText = data.name || "Teacher";
-        populateSubjectFilter(data.subjects || []);
+        document.getElementById("teacherName").innerText = data?.name || "Teacher";
         loadStudents();
     });
 }
 
-// ======================= Subject Filter =======================
-function populateSubjectFilter(subjects) {
-    const select = document.getElementById("subjectFilter");
-    select.innerHTML = "<option value='all'>All Subjects</option>";
-    subjects.forEach(sub => {
-        const opt = document.createElement("option");
-        opt.value = sub;
-        opt.innerText = sub;
-        select.appendChild(opt);
-    });
-}
-
-// ======================= Load Students ========================
 function loadStudents() {
-    const subjectFilter = document.getElementById("subjectFilter").value;
     const studentsRef = ref(db, 'students');
-    onValue(studentsRef, (snapshot) => {
+    onValue(studentsRef, snapshot => {
         allStudents = snapshot.val() || {};
-        displayStudents(subjectFilter);
+        displayStudents();
         displayBunkingReport();
     });
 }
 
-// ======================= Display Students Table =================
-function displayStudents(filter) {
+// ======================= Display Students ======================
+function displayStudents() {
     const table = document.getElementById("studentsTable");
-    table.innerHTML = `
-        <tr>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Subject</th>
-          <th>Attendance</th>
-          <th>Edit</th>
-          <th>Delete</th>
-        </tr>
-    `;
-
+    table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Subject</th><th>Edit</th><th>Delete</th><th>Attendance</th></tr>`;
     for (let id in allStudents) {
         const student = allStudents[id];
-        if (filter !== 'all' && student.subject !== filter) continue;
-
         const row = table.insertRow();
         row.insertCell(0).innerText = student.name;
         row.insertCell(1).innerText = student.class;
         row.insertCell(2).innerText = student.subject;
 
-        const totalAbsent = Object.values(student.attendance || {}).filter(s => s === "absent").length;
-        row.insertCell(3).innerText = totalAbsent;
-
-        // Edit button
-        const editCell = row.insertCell(4);
+        const editCell = row.insertCell(3);
         const editBtn = document.createElement("button");
         editBtn.innerText = "Edit";
-        if (student.teacher === currentTeacher.uid) {
-            editBtn.onclick = () => editStudentPrompt(id);
-        } else {
-            editBtn.disabled = true;
-        }
+        editBtn.disabled = student.teacher !== currentTeacher.uid;
+        editBtn.onclick = () => editStudentPrompt(id);
         editCell.appendChild(editBtn);
 
-        // Delete button
-        const delCell = row.insertCell(5);
+        const delCell = row.insertCell(4);
         const delBtn = document.createElement("button");
         delBtn.innerText = "Delete";
-        if (student.teacher === currentTeacher.uid) {
-            delBtn.onclick = () => deleteStudent(id);
-        } else {
-            delBtn.disabled = true;
-        }
+        delBtn.disabled = student.teacher !== currentTeacher.uid;
+        delBtn.onclick = () => deleteStudent(id);
         delCell.appendChild(delBtn);
 
-        // Click row to view calendar
-        row.onclick = () => openAttendanceModal(id);
+        const attCell = row.insertCell(5);
+        const attBtn = document.createElement("button");
+        attBtn.innerText = "Attendance";
+        attBtn.onclick = () => openAttendanceModal(id);
+        attCell.appendChild(attBtn);
     }
 }
 
@@ -140,19 +115,13 @@ function displayStudents(filter) {
 window.addStudent = function() {
     const name = document.getElementById("studentName").value;
     const className = document.getElementById("studentClass").value;
-    const subject = document.getElementById("subjectFilter").value;
+    const subject = document.getElementById("studentSubject").value;
     if (!name || !className || !subject) { alert("Enter all fields"); return; }
-
     const newStudentRef = push(ref(db, 'students'));
-    set(newStudentRef, {
-        name: name,
-        class: className,
-        subject: subject,
-        teacher: currentTeacher.uid,
-        attendance: {}
-    });
+    set(newStudentRef, { name, class: className, subject, teacher: currentTeacher.uid, attendance: {} });
     document.getElementById("studentName").value = "";
     document.getElementById("studentClass").value = "";
+    document.getElementById("studentSubject").value = "";
 }
 
 function editStudentPrompt(id) {
@@ -164,40 +133,6 @@ function editStudentPrompt(id) {
 function deleteStudent(id) {
     if (!confirm("Delete this student?")) return;
     remove(ref(db, 'students/' + id));
-}
-
-// ======================= Bunking Report =========================
-function displayBunkingReport() {
-    const table = document.getElementById("bunkingTable");
-    table.innerHTML = `
-        <tr>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Subject</th>
-          <th>Absences</th>
-        </tr>
-    `;
-    const bunkers = [];
-    for (let id in allStudents) {
-        const student = allStudents[id];
-        const totalAbsent = Object.values(student.attendance || {}).filter(s => s === "absent").length;
-        if (totalAbsent > 0) bunkers.push({ ...student, totalAbsent });
-    }
-
-    // Sort by most absent
-    bunkers.sort((a, b) => b.totalAbsent - a.totalAbsent);
-
-    bunkers.forEach(student => {
-        const row = table.insertRow();
-        row.insertCell(0).innerText = student.name;
-        row.insertCell(1).innerText = student.class;
-        row.insertCell(2).innerText = student.subject;
-        const cell = row.insertCell(3);
-        cell.innerText = student.totalAbsent;
-        if (student.totalAbsent >= 3) {
-            cell.style.color = "red"; // highlight top bunkers
-        }
-    });
 }
 
 // ======================= Attendance Modal ======================
@@ -215,26 +150,22 @@ window.closeModal = function() {
     document.getElementById("modalOverlay").classList.add("hidden");
 }
 
-// ======================= Load Monthly Attendance =================
+// ======================= Load Monthly Attendance ==================
 window.loadAttendanceMonth = function() {
-    const month = document.getElementById("monthPicker").value; // format YYYY-MM
+    const month = document.getElementById("monthPicker").value; 
     const table = document.getElementById("attendanceTable");
     table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Mark Present</th><th>Mark Absent</th></tr>`;
-
     if (!selectedStudentId) return;
     const student = allStudents[selectedStudentId];
     const attendance = student.attendance || {};
-
     for (let date in attendance) {
         if (month && !date.startsWith(month)) continue;
         const row = table.insertRow();
         row.insertCell(0).innerText = date;
         row.insertCell(1).innerText = attendance[date];
-
         const presentBtn = row.insertCell(2).appendChild(document.createElement("button"));
         presentBtn.innerText = "Present";
         presentBtn.onclick = () => markAttendance(date, "present");
-
         const absentBtn = row.insertCell(3).appendChild(document.createElement("button"));
         absentBtn.innerText = "Absent";
         absentBtn.onclick = () => markAttendance(date, "absent");
@@ -244,8 +175,31 @@ window.loadAttendanceMonth = function() {
 // ======================= Mark Attendance ======================
 function markAttendance(date, status) {
     if (!selectedStudentId) return;
-    const path = 'students/' + selectedStudentId + '/attendance/' + date;
-    set(ref(db, path), status);
+    set(ref(db, 'students/' + selectedStudentId + '/attendance/' + date), status);
+    loadAttendanceMonth();
+    loadStudents();
+}
+
+// ======================= Bunking Report =========================
+function displayBunkingReport() {
+    const table = document.getElementById("bunkingTable");
+    table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>`;
+    const bunkers = [];
+    for (let id in allStudents) {
+        const student = allStudents[id];
+        const totalAbsent = Object.values(student.attendance || {}).filter(s => s === "absent").length;
+        if (totalAbsent > 0) bunkers.push({ ...student, totalAbsent });
+    }
+    bunkers.sort((a,b)=>b.totalAbsent - a.totalAbsent);
+    bunkers.forEach(student=>{
+        const row = table.insertRow();
+        row.insertCell(0).innerText = student.name;
+        row.insertCell(1).innerText = student.class;
+        row.insertCell(2).innerText = student.subject;
+        const cell = row.insertCell(3);
+        cell.innerText = student.totalAbsent;
+        if(student.totalAbsent>=3) cell.style.color="red";
+    });
 }
 
 // ======================= Print Monthly Report ==================
@@ -255,11 +209,4 @@ window.printReport = function() {
     w.document.write(printContents);
     w.document.close();
     w.print();
-}
-
-// ======================= Tabs ================================
-window.showTab = function(tabId) {
-    document.getElementById("studentsTab").classList.add("hidden");
-    document.getElementById("bunkingTab").classList.add("hidden");
-    document.getElementById(tabId).classList.remove("hidden");
 }
