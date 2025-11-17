@@ -156,6 +156,8 @@ export function loadStudents(selectedClass = '') {
   onValue(studentsRef, snap => {
     allStudents = snap.val() || {};
     renderStudentsTable();
+  }, err => {
+    console.error('loadStudents onValue error', err);
   });
 }
 
@@ -343,7 +345,8 @@ export function openAttendanceModal(studentId) {
   }
 
   const student = allStudents[studentId] || {};
-  document.getElementById('modalStudentName').innerText = student.name || 'Student';
+  const nameSpan = document.getElementById('modalStudentName');
+  if (nameSpan) nameSpan.innerText = student.name || 'Student';
   overlay.style.display = 'block';
   modal.style.display = 'block';
 
@@ -423,10 +426,7 @@ window.loadAttendanceMonth = async function () {
 };
 
 /* ======================
-   Mark Attendance page (separate page flow)
-   - Dual mode:
-     * CLASS MODE => if localStorage.selectedClass is set
-     * SINGLE STUDENT MODE => if localStorage.selectedStudentId is set
+   Mark Attendance page (dual-mode: class OR single student)
    ====================== */
 
 function todayDateString() {
@@ -455,7 +455,8 @@ window.initMarkAttendancePage = async function () {
   try {
     const snap = await get(ref(db, `students/${selectedStudentId}`));
     const student = snap.val() || {};
-    document.getElementById('studentNameLabel').innerText = student.name || '';
+    const lbl = document.getElementById('studentNameLabel');
+    if (lbl) lbl.innerText = student.name || '';
     // set default month
     const now = new Date();
     const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -474,7 +475,8 @@ async function loadClassAttendanceUI(className) {
   // Build a simple UI inside mark-attendance.html:
   // - Title + class
   // - Table: Name | Present (radio checked) | Absent (radio)
-  // - Save Attendance button (writes today's date)
+  // - Save Attendance button (writes attendance for selected date)
+
   const container = document.querySelector('.container');
   if (!container) return alert('Mark Attendance page missing container');
 
@@ -529,7 +531,7 @@ async function loadClassAttendanceUI(className) {
       c.colSpan = 3;
       c.innerText = 'No students found in this class for your account.';
     } else {
-      rows.forEach((st, idx) => {
+      rows.forEach((st) => {
         const r = table.insertRow();
         r.insertCell(0).innerText = st.name;
         // Present radio
@@ -560,5 +562,4 @@ async function loadClassAttendanceUI(className) {
     };
     document.getElementById('cancelClassAttendanceBtn').onclick = () => {
       localStorage.removeItem('selectedClass');
-      window.location.href = 'dashboard.html';
-    
+      window.location.href 
