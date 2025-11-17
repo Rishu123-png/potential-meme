@@ -1,6 +1,11 @@
 // script.js
-// Clean, fixed and page-aware script for:
-// index.html, dashboard.html, add-students.html, mark-attendance.html, top-bunkers.html
+// Works with: index.html, dashboard.html, add-students.html, mark-attendance.html, top-bunkers.html
+// Uses Realtime Database (v10.12.5 CDN imports expected in firebase.js)
+
+/* IMPORTANT:
+   Keep firebase.js (v10.12.5 CDN) in project and that file must export `auth` and `db`.
+   Example firebase.js already provided earlier by you.
+*/
 
 import { auth, db } from "./firebase.js";
 import {
@@ -101,7 +106,7 @@ export async function loadTeacherProfile() {
 
     // populate class selects (supports object or array)
     const classes = data.classes || {};
-    const ids = Array.isArray(classes) ? classes : Object.keys(classes).length ? Object.values(classes) : [];
+    const ids = Array.isArray(classes) ? classes : (Object.keys(classes).length ? Object.values(classes) : []);
 
     function fill(selectId) {
       const sel = document.getElementById(selectId);
@@ -144,7 +149,7 @@ window.initDashboardPage = function () {
     };
   }
 
-  // initial students load (empty until class chosen)
+  // initial students load
   loadStudents();
 };
 
@@ -166,17 +171,18 @@ function renderStudentsTable() {
   // header
   table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Absences</th><th>Actions</th></tr>`;
 
-  if (!allStudents || !auth.currentUser) return;
+  if (!allStudents) return;
 
+  // iterate students in DB
   for (const id in allStudents) {
     const s = allStudents[id];
     if (!s) continue;
 
-    // teacher restriction — teacher sees only their students
-    if (s.teacher !== auth.currentUser.uid) continue;
-
-    // class filter
+    // If class filter is set, skip other classes
     if (currentClassFilter && s.class !== currentClassFilter) continue;
+
+    // If student has a teacher and it is not current teacher, skip
+    if (s.teacher && auth.currentUser && s.teacher !== auth.currentUser.uid) continue;
 
     const row = table.insertRow();
     row.insertCell(0).innerText = s.name || '';
@@ -187,9 +193,18 @@ function renderStudentsTable() {
 
     const actionCell = row.insertCell(3);
 
-    // Edit button (only for teacher)
+    // If student has no teacher, show Claim button + Add button to claim and edit
+    if (!s.teacher) {
+      const claimBtn = document.createElement('button');
+      claimBtn.innerText = 'Claim';
+      claimBtn.onclick = () => claimStudent(id);
+      actionCell.appendChild(claimBtn);
+    }
+
+    // Edit button (only enabled if this teacher owns the student)
     const editBtn = document.createElement('button');
     editBtn.innerText = 'Edit';
+    editBtn.disabled = !(s.teacher && auth.currentUser && s.teacher === auth.currentUser.uid);
     editBtn.onclick = async () => {
       const newName = prompt('Edit student name', s.name || '');
       if (!newName) return;
@@ -199,9 +214,10 @@ function renderStudentsTable() {
     };
     actionCell.appendChild(editBtn);
 
-    // Delete button
+    // Delete button (only if teacher owns student)
     const delBtn = document.createElement('button');
     delBtn.innerText = 'Delete';
+    delBtn.disabled = !(s.teacher && auth.currentUser && s.teacher === auth.currentUser.uid);
     delBtn.onclick = async () => {
       if (!confirm('Delete this student?')) return;
       try {
@@ -210,12 +226,13 @@ function renderStudentsTable() {
     };
     actionCell.appendChild(delBtn);
 
-    // Mark Attendance button
+    // Mark Attendance button (only if teacher owns or student was unassigned but teacher claimed)
     const markBtn = document.createElement('button');
     markBtn.innerText = 'Mark Attendance';
+    markBtn.disabled = !(s.teacher && auth.currentUser && s.teacher === auth.currentUser.uid);
     markBtn.onclick = () => {
       localStorage.setItem('selectedStudentId', id);
-      // If dashboard contains modal, open modal; otherwise go to mark-attendance page
+      // If dashboard has modal, open it; else go to mark-attendance page
       if (document.getElementById('attendanceModal')) {
         openAttendanceModal(id);
       } else {
@@ -237,6 +254,8 @@ window.initAddStudentsPage = function () {
 };
 
 window.addStudent = async function () {
+  if (!auth.currentUser) { alert('Please login'); window.location.href = 'index.html'; return; }
+
   const name = (document.getElementById('studentName')?.value || '').trim();
   const cls = (document.getElementById('classSelectAdd')?.value || '').trim();
   if (!name || !cls) { alert('Enter student name and class'); return; }
@@ -250,6 +269,50 @@ window.addStudent = async function () {
   } catch (err) {
     console.error('Add student failed', err);
     alert('Failed to add student');
+  }
+};
+
+/* ======================
+   Claim student (take ownership)
+   ====================== */
+window.claimStudent = async function (studentId) {
+  if (!auth.currentUser) { alert('Login required'); return; }
+  if (!confirm('Claim this student and assign to your account?')) return;
+  try {
+    await set(ref(db, `students/${studentId}/teacher`), auth.currentUser.uid);
+    alert('Student claimed');
+    loadStudents(currentClassFilter);
+  } catch (err) {
+    console.error('Claim failed', err);
+    alert('Failed to claim student');
+  }
+};
+
+/* ======================
+   One-time fixer (optional)
+   Assign all students without teacher to current teacher.
+   Use from console: fixTeacherIds()
+   ====================== */
+window.fixTeacherIds = async function () {
+  if (!auth.currentUser) { alert('Login first'); return; }
+  if (!confirm('This will set ALL students that have NO teacher to your account. Proceed?')) return;
+  try {
+    const snap = await get(ref(db, 'students'));
+    const data = snap.val() || {};
+    for (const id in data) {
+      const s = data[id];
+      if (!s) {
+        continue;
+      }
+      if (!s.teacher) {
+        await set(ref(db, `students/${id}/teacher`), auth.currentUser.uid);
+      }
+    }
+    alert('Done. Refreshing students list.');
+    loadStudents(currentClassFilter);
+  } catch (err) {
+    console.error('fixTeacherIds error', err);
+    alert('Failed to fix teacher ids');
   }
 };
 
@@ -452,7 +515,8 @@ window.initTopBunkersPage = async function () {
     for (const id in data) {
       const s = data[id];
       if (!s) continue;
-      if (s.teacher !== auth.currentUser.uid) continue;
+      // only show bunkers for students owned by this teacher
+      if (!(s.teacher && s.teacher === auth.currentUser.uid)) continue;
       const absentCount = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
       if (absentCount > 0) bunkers.push({ id, ...s, totalAbsent: absentCount });
     }
@@ -477,16 +541,4 @@ window.initTopBunkersPage = async function () {
    Helpers
    ====================== */
 
-// Quick helper used in dashboard to jump to mark attendance for first student in selected class
-window.goToMarkAttendance = function () {
-  if (!currentClassFilter) return alert('Select a class first');
-  for (const id in allStudents) {
-    const s = allStudents[id];
-    if (s && s.class === currentClassFilter && s.teacher === auth.currentUser.uid) {
-      localStorage.setItem('selectedStudentId', id);
-      window.location.href = 'mark-attendance.html';
-      return;
-    }
-  }
-  alert('No students in this class. Add students first.');
-};
+// Quick helper used in dashboard to jump to mark attendance for first stud
