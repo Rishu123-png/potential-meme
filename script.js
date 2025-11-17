@@ -1,6 +1,6 @@
 // script.js
-// Clean, fixed and page-aware script for:
-// index.html, dashboard.html, add-students.html, mark-attendance.html, top-bunkers.html
+// Works with: index.html, dashboard.html, add-students.html, mark-attendance.html, top-bunkers.html
+// Uses Realtime Database (v10.12.5 CDN imports expected in firebase.js)
 
 import { auth, db } from "./firebase.js";
 import {
@@ -32,7 +32,6 @@ onAuthStateChanged(auth, (user) => {
    LOGIN / LOGOUT
    ====================== */
 
-// Called from index.html (onclick="login()")
 window.login = async function () {
   const email = (document.getElementById('email')?.value || '').trim();
   const password = document.getElementById('password')?.value || '';
@@ -41,7 +40,6 @@ window.login = async function () {
   try {
     const cred = await signInWithEmailAndPassword(auth, email, password);
     currentTeacherUser = cred.user;
-    // Redirect to dashboard after successful login
     window.location.href = 'dashboard.html';
   } catch (err) {
     console.error('Login failed', err);
@@ -49,7 +47,6 @@ window.login = async function () {
   }
 };
 
-// Called from pages (onclick="logout()")
 window.logout = async function () {
   try {
     await signOut(auth);
@@ -64,20 +61,8 @@ window.logout = async function () {
    Teacher profile & classes
    ====================== */
 
-/*
-  This function populates:
-   - #teacherName
-   - #teacherSubject
-   - #teacherSubjectAdd
-   - select#classSelect
-   - select#classSelectAdd
-
-  Call from dashboard.html onload: initDashboardPage()
-  Call from add-students.html onload: initAddStudentsPage()
-*/
 export async function loadTeacherProfile() {
   if (!auth.currentUser) {
-    // retry shortly if auth not ready yet
     setTimeout(loadTeacherProfile, 200);
     return;
   }
@@ -85,12 +70,10 @@ export async function loadTeacherProfile() {
   const uid = auth.currentUser.uid;
   const teacherRef = ref(db, `teachers/${uid}`);
 
-  // listen for teacher profile changes
   onValue(teacherRef, snapshot => {
     const data = snapshot.val() || {};
     teacherProfile = data;
 
-    // set UI fields if present
     const nameEl = document.getElementById('teacherName');
     const subjectEl = document.getElementById('teacherSubject');
     const subjectAddEl = document.getElementById('teacherSubjectAdd');
@@ -99,9 +82,8 @@ export async function loadTeacherProfile() {
     if (subjectEl) subjectEl.innerText = data.subject || '';
     if (subjectAddEl) subjectAddEl.innerText = data.subject || '';
 
-    // populate class selects (supports object or array)
     const classes = data.classes || {};
-    const ids = Array.isArray(classes) ? classes : Object.keys(classes).length ? Object.values(classes) : [];
+    const ids = Array.isArray(classes) ? classes : (Object.keys(classes).length ? Object.values(classes) : []);
 
     function fill(selectId) {
       const sel = document.getElementById(selectId);
@@ -124,18 +106,14 @@ export async function loadTeacherProfile() {
    Dashboard: students list
    ====================== */
 
-// Called when dashboard.html loads
 window.initDashboardPage = function () {
   if (!auth.currentUser) {
-    // wait for auth to initialize
     setTimeout(window.initDashboardPage, 300);
     return;
   }
 
-  // Load teacher profile and populate classes
   loadTeacherProfile();
 
-  // Attach onchange to class selector
   const classSel = document.getElementById('classSelect');
   if (classSel) {
     classSel.onchange = () => {
@@ -144,11 +122,9 @@ window.initDashboardPage = function () {
     };
   }
 
-  // initial students load (empty until class chosen)
   loadStudents();
 };
 
-// load all students and render (filtered by class if provided)
 export function loadStudents(selectedClass = '') {
   currentClassFilter = selectedClass || currentClassFilter || '';
 
@@ -163,20 +139,17 @@ function renderStudentsTable() {
   const table = document.getElementById('studentsTable');
   if (!table) return;
 
-  // header
   table.innerHTML = `<tr><th>Name</th><th>Class</th><th>Absences</th><th>Actions</th></tr>`;
 
-  if (!allStudents || !auth.currentUser) return;
+  if (!allStudents) return;
 
   for (const id in allStudents) {
     const s = allStudents[id];
     if (!s) continue;
 
-    // teacher restriction — teacher sees only their students
-    if (s.teacher !== auth.currentUser.uid) continue;
-
-    // class filter
     if (currentClassFilter && s.class !== currentClassFilter) continue;
+
+    if (s.teacher && auth.currentUser && s.teacher !== auth.currentUser.uid) continue;
 
     const row = table.insertRow();
     row.insertCell(0).innerText = s.name || '';
@@ -187,9 +160,16 @@ function renderStudentsTable() {
 
     const actionCell = row.insertCell(3);
 
-    // Edit button (only for teacher)
+    if (!s.teacher) {
+      const claimBtn = document.createElement('button');
+      claimBtn.innerText = 'Claim';
+      claimBtn.onclick = () => claimStudent(id);
+      actionCell.appendChild(claimBtn);
+    }
+
     const editBtn = document.createElement('button');
     editBtn.innerText = 'Edit';
+    editBtn.disabled = !(s.teacher && auth.currentUser && s.teacher === auth.currentUser.uid);
     editBtn.onclick = async () => {
       const newName = prompt('Edit student name', s.name || '');
       if (!newName) return;
@@ -199,23 +179,23 @@ function renderStudentsTable() {
     };
     actionCell.appendChild(editBtn);
 
-    // Delete button
     const delBtn = document.createElement('button');
     delBtn.innerText = 'Delete';
+    delBtn.disabled = !(s.teacher && auth.currentUser && s.teacher === auth.currentUser.uid);
     delBtn.onclick = async () => {
       if (!confirm('Delete this student?')) return;
       try {
-        await set(ref(db, `students/${id}`), null); // remove node
+        await set(ref(db, `students/${id}`), null);
       } catch (err) { alert('Delete failed'); console.error(err); }
     };
     actionCell.appendChild(delBtn);
 
-    // Mark Attendance button
     const markBtn = document.createElement('button');
     markBtn.innerText = 'Mark Attendance';
+    markBtn.disabled = !(s.teacher && auth.currentUser && s.teacher === auth.currentUser.uid);
     markBtn.onclick = () => {
+      localStorage.removeItem('selectedClass');
       localStorage.setItem('selectedStudentId', id);
-      // If dashboard contains modal, open modal; otherwise go to mark-attendance page
       if (document.getElementById('attendanceModal')) {
         openAttendanceModal(id);
       } else {
@@ -230,13 +210,14 @@ function renderStudentsTable() {
    Add Student page
    ====================== */
 
-// Called from add-students.html onload
 window.initAddStudentsPage = function () {
   if (!auth.currentUser) { setTimeout(window.initAddStudentsPage, 300); return; }
   loadTeacherProfile();
 };
 
 window.addStudent = async function () {
+  if (!auth.currentUser) { alert('Please login'); window.location.href = 'index.html'; return; }
+
   const name = (document.getElementById('studentName')?.value || '').trim();
   const cls = (document.getElementById('classSelectAdd')?.value || '').trim();
   if (!name || !cls) { alert('Enter student name and class'); return; }
@@ -254,6 +235,60 @@ window.addStudent = async function () {
 };
 
 /* ======================
+   Claim student (take ownership)
+   ====================== */
+window.claimStudent = async function (studentId) {
+  if (!auth.currentUser) { alert('Login required'); return; }
+  if (!confirm('Claim this student and assign to your account?')) return;
+  try {
+    await set(ref(db, `students/${studentId}/teacher`), auth.currentUser.uid);
+    alert('Student claimed');
+    loadStudents(currentClassFilter);
+  } catch (err) {
+    console.error('Claim failed', err);
+    alert('Failed to claim student');
+  }
+};
+
+/* ======================
+   One-time fixer (optional)
+   Assign all students without teacher to current teacher.
+   Use from console: fixTeacherIds()
+   ====================== */
+window.fixTeacherIds = async function () {
+  if (!auth.currentUser) { alert('Login first'); return; }
+  if (!confirm('This will set ALL students that have NO teacher to your account. Proceed?')) return;
+  try {
+    const snap = await get(ref(db, 'students'));
+    const data = snap.val() || {};
+    for (const id in data) {
+      const s = data[id];
+      if (!s) continue;
+      if (!s.teacher) {
+        // IMPORTANT: your DB rules must permit teacher to write student.teacher.
+        await set(ref(db, `students/${id}/teacher`), auth.currentUser.uid);
+      }
+    }
+    alert('Done. Refreshing students list.');
+    loadStudents(currentClassFilter);
+  } catch (err) {
+    console.error('fixTeacherIds error', err);
+    alert('Failed to fix teacher ids — check DB rules and console for details.');
+  }
+};
+/* ======================
+   Helpers: goToMarkAttendance (for class-wide attendance)
+   ====================== */
+window.goToMarkAttendance = function () {
+  const classSel = document.getElementById('classSelect');
+  const cls = classSel ? classSel.value : currentClassFilter;
+  if (!cls) return alert('Select a class first');
+  localStorage.setItem('selectedClass', cls);
+  localStorage.removeItem('selectedStudentId');
+  window.location.href = 'mark-attendance.html';
+};
+
+/* ======================
    Attendance modal & month view (dashboard modal version)
    ====================== */
 
@@ -262,9 +297,9 @@ export function openAttendanceModal(studentId) {
   const overlay = document.getElementById('modalOverlay');
   const modal = document.getElementById('attendanceModal');
 
-  // If modal elements aren't present (multi-page flow), redirect to mark-attendance page
   if (!modal || !overlay) {
     localStorage.setItem('selectedStudentId', studentId);
+    localStorage.removeItem('selectedClass');
     window.location.href = 'mark-attendance.html';
     return;
   }
@@ -274,7 +309,6 @@ export function openAttendanceModal(studentId) {
   overlay.style.display = 'block';
   modal.style.display = 'block';
 
-  // default month => current month
   const now = new Date();
   const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const mp = document.getElementById('monthPicker');
@@ -293,7 +327,7 @@ window.closeModal = function () {
 
 window.loadAttendanceMonth = async function () {
   const mp = document.getElementById('monthPicker');
-  const month = mp?.value; // "YYYY-MM"
+  const month = mp?.value;
   if (!selectedStudentId) return;
   try {
     const snap = await get(ref(db, `students/${selectedStudentId}`));
@@ -305,7 +339,6 @@ window.loadAttendanceMonth = async function () {
     table.innerHTML = `<tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr>`;
 
     if (!month) {
-      // render existing entries
       Object.keys(attendance).sort().forEach(date => {
         const status = attendance[date];
         const r = table.insertRow();
@@ -319,10 +352,8 @@ window.loadAttendanceMonth = async function () {
       return;
     }
 
-    // build days of month
     const [y, m] = month.split('-').map(Number);
     if (!y || !m) return;
-
     const daysInMonth = new Date(y, m, 0).getDate();
     for (let d = 1; d <= daysInMonth; d++) {
       const dd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -330,12 +361,10 @@ window.loadAttendanceMonth = async function () {
       const r = table.insertRow();
       r.insertCell(0).innerText = dd;
       const statusCell = r.insertCell(1); statusCell.innerText = status || '-';
-
       const pcell = r.insertCell(2);
       const pbtn = document.createElement('button'); pbtn.innerText = 'Present';
       pbtn.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${dd}`), 'present'); loadAttendanceMonth(); };
       pcell.appendChild(pbtn);
-
       const acell = r.insertCell(3);
       const abtn = document.createElement('button'); abtn.innerText = 'Absent';
       abtn.onclick = async () => { await set(ref(db, `students/${selectedStudentId}/attendance/${dd}`), 'absent'); loadAttendanceMonth(); };
@@ -350,21 +379,31 @@ window.loadAttendanceMonth = async function () {
 };
 
 /* ======================
-   Mark Attendance page (separate page flow)
+   Mark Attendance page (dual-mode)
    ====================== */
+
+function todayDateString() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
 
 window.initMarkAttendancePage = async function () {
   if (!auth.currentUser) { setTimeout(window.initMarkAttendancePage, 300); return; }
 
+  const classForMark = localStorage.getItem('selectedClass');
   selectedStudentId = localStorage.getItem('selectedStudentId') || null;
+
+  if (classForMark) {
+    await loadClassAttendanceUI(classForMark);
+    return;
+  }
+
   if (!selectedStudentId) { alert('No student selected. Go to dashboard and click "Mark Attendance".'); window.location.href = 'dashboard.html'; return; }
 
-  // fetch student
   try {
     const snap = await get(ref(db, `students/${selectedStudentId}`));
     const student = snap.val() || {};
     document.getElementById('studentNameLabel').innerText = student.name || '';
-    // set default month
     const now = new Date();
     const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const mp = document.getElementById('monthPickerMark');
@@ -393,7 +432,6 @@ window.loadMarkAttendanceMonth = async function () {
 
     const [y, m] = (month || '').split('-').map(Number);
     if (!y || !m) {
-      // show existing entries only
       Object.keys(attendance).sort().forEach(date => {
         const status = attendance[date];
         const r = table.insertRow();
@@ -427,7 +465,207 @@ window.loadMarkAttendanceMonth = async function () {
 };
 
 /* ======================
-   Print monthly report (modal or mark-attendance page)
+   Class Attendance UI & save
+   ====================== */
+
+async function loadClassAttendanceUI(className) {
+  const container = document.querySelector('.container');
+  if (!container) return alert('Mark Attendance page missing container');
+
+  container.innerHTML = `
+    <div class="row" style="justify-content:space-between;">
+      <h2>Mark Attendance — Class: <span id="classTitle"></span></h2>
+      <button class="small-btn" onclick="logout()">Logout</button>
+    </div>
+    <div style="margin-top:8px;">
+      <div>Class: <strong id="classTitleText"></strong></div>
+      <div style="margin-top:8px;">
+        <label for="attendanceDate">Date</label>
+        <input id="attendanceDate" type="date" value="${todayDateString()}">
+      </div>
+    </div>
+    <div class="table" style="margin-top:12px;">
+      <table id="classAttendanceTable">
+        <tr><th>Name</th><th>Present</th><th>Absent</th></tr>
+      </table>
+    </div>
+    <div class="row" style="margin-top:12px;">
+      <button id="saveClassAttendanceBtn">Save Attendance</button>
+      <button id="cancelClassAttendanceBtn">Cancel</button>
+      <button id="exportClassCSVBtn">Export CSV</button>
+    </div>
+    <p class="footer">Developed by Rishu Jaswar</p>
+  `;
+
+  document.getElementById('classTitle').innerText = className;
+  document.getElementById('classTitleText').innerText = className;
+
+  try {
+    const snap = await get(ref(db, 'students'));
+    const data = snap.val() || {};
+    const rows = [];
+    for (const id in data) {
+      const s = data[id];
+      if (!s) continue;
+      if (s.class !== className) continue;
+      if (!(s.teacher && s.teacher === auth.currentUser.uid)) continue;
+      rows.push({ id, name: s.name || '' });
+    }
+
+    const table = document.getElementById('classAttendanceTable');
+    if (!table) return;
+
+    if (rows.length === 0) {
+      const r = table.insertRow();
+      const c = r.insertCell(0);
+      c.colSpan = 3;
+      c.innerText = 'No students found in this class for your account.';
+    } else {
+      rows.forEach((st) => {
+        const r = table.insertRow();
+        r.insertCell(0).innerText = st.name;
+        const pcell = r.insertCell(1);
+        const presentInput = document.createElement('input');
+        presentInput.type = 'radio';
+        presentInput.name = `att_${st.id}`;
+        presentInput.value = 'present';
+        presentInput.checked = true; // default present
+        pcell.appendChild(presentInput);
+        const acell = r.insertCell(2);
+        const absentInput = document.createElement('input');
+        absentInput.type = 'radio';
+        absentInput.name = `att_${st.id}`;
+        absentInput.value = 'absent';
+        acell.appendChild(absentInput);
+        r.dataset.studentId = st.id;
+      });
+    }
+
+    document.getElementById('saveClassAttendanceBtn').onclick = async () => {
+      const dateInput = document.getElementById('attendanceDate').value || todayDateString();
+      await saveClassAttendance(rows, dateInput);
+    };
+    document.getElementById('cancelClassAttendanceBtn').onclick = () => {
+      localStorage.removeItem('selectedClass');
+      window.location.href = 'dashboard.html';
+    };
+    document.getElementById('exportClassCSVBtn').onclick = () => exportClassAttendanceCSV(rows, document.getElementById('attendanceDate').value || todayDateString());
+  } catch (err) {
+    console.error('loadClassAttendanceUI error', err);
+  }
+}
+
+async function saveClassAttendance(rows, dateStr) {
+  if (!rows || rows.length === 0) { alert('No students to save'); return; }
+  try {
+    // For each student pick chosen radio
+    for (const st of rows) {
+      const selected = document.querySelector(`input[name="att_${st.id}"]:checked`);
+      const value = selected ? selected.value : 'present';
+      await set(ref(db, `students/${st.id}/attendance/${dateStr}`), value);
+    }
+    alert('Attendance saved for ' + dateStr);
+    // After save, clear and return to dashboard
+    localStorage.removeItem('selectedClass');
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    console.error('saveClassAttendance error', err);
+    alert('Failed to save attendance — check console for details.');
+  }
+}
+
+/* ======================
+   Exports & print helpers
+   ====================== */
+
+function tableToCSV(headerRow, rows) {
+  // headerRow: array, rows: array of arrays
+  const all = [headerRow.join(',')].concat(rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')));
+  return all.join('\n');
+}
+
+function downloadFile(filename, content, mime='text/csv') {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+window.exportAttendanceCSV = async function () {
+  if (!selectedStudentId) return alert('No student selected');
+  const snap = await get(ref(db, `students/${selectedStudentId}`));
+  const student = snap.val() || {};
+  const attendance = student.attendance || {};
+  const rows = Object.keys(attendance).sort().map(d => [d, attendance[d]]);
+  const csv = tableToCSV(['Date','Status'], rows);
+  downloadFile(`${(student.name||'student')}_attendance.csv`, csv, 'text/csv');
+};
+
+window.exportAttendanceCSVModal = async function () {
+  const mp = document.getElementById('monthPicker');
+  const month = mp?.value;
+  if (!selectedStudentId) return alert('No student selected');
+  const snap = await get(ref(db, `students/${selectedStudentId}`));
+  const student = snap.val() || {};
+  const attendance = student.attendance || {};
+  const rows = Object.keys(attendance).sort().map(d => [d, attendance[d]]);
+  const csv = tableToCSV(['Date','Status'], rows);
+  downloadFile(`${(student.name||'student')}_attendance.csv`, csv, 'text/csv');
+};
+
+window.exportAttendanceExcel = async function () {
+  // Excel-friendly CSV (rename to .xls) — simple compatibility
+  if (!selectedStudentId) return alert('No student selected');
+  const snap = await get(ref(db, `students/${selectedStudentId}`));
+  const student = snap.val() || {};
+  const attendance = student.attendance || {};
+  const rows = Object.keys(attendance).sort().map(d => [d, attendance[d]]);
+  const csv = tableToCSV(['Date','Status'], rows);
+  downloadFile(`${(student.name||'student')}_attendance.xls`, csv, 'application/vnd.ms-excel');
+};
+
+window.exportClassAttendanceCSV = (rows, dateStr) => {
+  if (!rows || rows.length === 0) return alert('No data to export');
+  const csvRows = rows.map(st => {
+    const selected = document.querySelector(`input[name="att_${st.id}"]:checked`);
+    const value = selected ? selected.value : 'present';
+    return [st.name, st.id, value];
+  });
+  const csv = tableToCSV(['Name','StudentId','Status'], csvRows);
+  downloadFile(`class_attendance_${dateStr}.csv`, csv, 'text/csv');
+};
+
+function exportClassAttendanceCSV(rows, dateStr) {
+  window.exportClassAttendanceCSV(rows, dateStr);
+}
+
+window.exportBunkersCSV = async function () {
+  try {
+    const snap = await get(ref(db, 'students'));
+    const data = snap.val() || {};
+    const rows = [];
+    for (const id in data) {
+      const s = data[id];
+      if (!s) continue;
+      if (!(s.teacher && s.teacher === auth.currentUser.uid)) continue;
+      const absent = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
+      if (absent > 0) rows.push([s.name||'', s.class||'', s.subject||'', absent]);
+    }
+    if (rows.length === 0) return alert('No bunkers found');
+    const csv = tableToCSV(['Name','Class','Subject','Absences'], rows);
+    downloadFile('top_bunkers.csv', csv, 'text/csv');
+  } catch (err) {
+    console.error('exportBunkersCSV', err);
+  }
+};
+
+/* ======================
+   Print report helper
    ====================== */
 window.printReport = function () {
   const table = document.getElementById('markAttendanceTable') || document.getElementById('attendanceMonthTable');
@@ -452,7 +690,7 @@ window.initTopBunkersPage = async function () {
     for (const id in data) {
       const s = data[id];
       if (!s) continue;
-      if (s.teacher !== auth.currentUser.uid) continue;
+      if (!(s.teacher && s.teacher === auth.currentUser.uid)) continue;
       const absentCount = Object.values(s.attendance || {}).filter(v => v === 'absent').length;
       if (absentCount > 0) bunkers.push({ id, ...s, totalAbsent: absentCount });
     }
@@ -474,19 +712,14 @@ window.initTopBunkersPage = async function () {
 };
 
 /* ======================
-   Helpers
+   Small UX helper to export modal attendance CSV (exposed globally)
    ====================== */
-
-// Quick helper used in dashboard to jump to mark attendance for first student in selected class
-window.goToMarkAttendance = function () {
-  if (!currentClassFilter) return alert('Select a class first');
-  for (const id in allStudents) {
-    const s = allStudents[id];
-    if (s && s.class === currentClassFilter && s.teacher === auth.currentUser.uid) {
-      localStorage.setItem('selectedStudentId', id);
-      window.location.href = 'mark-attendance.html';
-      return;
-    }
-  }
-  alert('No students in this class. Add students first.');
-};
+window.exportAttendanceCSVModal = window.exportAttendanceCSVModal || (async () => {
+  if (!selectedStudentId) return alert('No student selected');
+  const snap = await get(ref(db, `students/${selectedStudentId}`));
+  const student = snap.val() || {};
+  const attendance = student.attendance || {};
+  const rows = Object.keys(attendance).sort().map(d => [d, attendance[d]]);
+  const csv = tableToCSV(['Date','Status'], rows);
+  downloadFile(`${(student.name||'student')}_attendance.csv`, csv, 'text/csv');
+});
