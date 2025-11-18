@@ -723,3 +723,256 @@ window.exportAttendanceCSVModal = window.exportAttendanceCSVModal || (async () =
   const csv = tableToCSV(['Date','Status'], rows);
   downloadFile(`${(student.name||'student')}_attendance.csv`, csv, 'text/csv');
 });
+/* ======================
+   Marks page + Prediction
+   ====================== */
+
+// Call on marks.html load
+window.initMarksPage = async function () {
+  if (!auth.currentUser) { setTimeout(window.initMarksPage, 300); return; }
+
+  // populate student dropdown (only teacher's own students)
+  await loadStudentsForMarks();
+
+  const sel = document.getElementById('marksStudentSelect');
+  sel.onchange = async () => {
+    const id = sel.value;
+    if (!id) {
+      document.getElementById('marksForm').style.display = 'none';
+      return;
+    }
+    document.getElementById('marksForm').style.display = 'block';
+    const student = allStudents[id] || {};
+    document.getElementById('marksStudentName').innerText = (student.name || 'Student') + ' — ' + (student.class || '');
+    await loadMarksForStudent(id);
+  };
+
+  document.getElementById('predictBtn').onclick = () => {
+    const id = document.getElementById('marksStudentSelect').value;
+    if (!id) return alert('Select a student first');
+    computeAndShowPrediction(); // uses current input values
+  };
+
+  document.getElementById('saveMarksBtn').onclick = async () => {
+    const id = document.getElementById('marksStudentSelect').value;
+    if (!id) return alert('Select a student first');
+    await saveMarksForStudent(id);
+  };
+
+  document.getElementById('clearMarksBtn').onclick = () => {
+    ['ut1Score','ut1Max','hyScore','hyMax','ut2Score','ut2Max','annualScore','annualMax'].forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.value = '';
+    });
+    document.getElementById('predictionSummary').innerText = 'Cleared inputs.';
+  };
+};
+
+// populate dropdown using cached allStudents; also refresh cache from DB
+async function loadStudentsForMarks() {
+  // ensure allStudents is up to date
+  try {
+    const snap = await get(ref(db, 'students'));
+    allStudents = snap.val() || {};
+  } catch (err) {
+    console.error('loadStudentsForMarks error', err);
+    alert('Failed to load students');
+    return;
+  }
+
+  const sel = document.getElementById('marksStudentSelect');
+  sel.innerHTML = '<option value="">-- Select student --</option>';
+  for (const id in allStudents) {
+    const s = allStudents[id];
+    if (!s) continue;
+    // show only students of this teacher
+    if (!(s.teacher && s.teacher === auth.currentUser.uid)) continue;
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.innerText = `${s.name} — ${s.class || ''}`;
+    sel.appendChild(opt);
+  }
+}
+
+// Load existing marks from RTDB for a student and fill inputs
+async function loadMarksForStudent(studentId) {
+  try {
+    const snap = await get(ref(db, `marks/${auth.currentUser.uid}/${studentId}`));
+    const data = snap.val() || {};
+
+    // set inputs if values exist
+    if (data['UT-1']) {
+      document.getElementById('ut1Score').value = data['UT-1'].score ?? '';
+      document.getElementById('ut1Max').value = data['UT-1'].max ?? '';
+    } else {
+      document.getElementById('ut1Score').value = '';
+      document.getElementById('ut1Max').value = '';
+    }
+    if (data['Half-Yearly']) {
+      document.getElementById('hyScore').value = data['Half-Yearly'].score ?? '';
+      document.getElementById('hyMax').value = data['Half-Yearly'].max ?? '';
+    } else {
+      document.getElementById('hyScore').value = '';
+      document.getElementById('hyMax').value = '';
+    }
+    if (data['UT-2']) {
+      document.getElementById('ut2Score').value = data['UT-2'].score ?? '';
+      document.getElementById('ut2Max').value = data['UT-2'].max ?? document.getElementById('ut2Max').value || '';
+    } else {
+      document.getElementById('ut2Score').value = '';
+    }
+    if (data['Annual']) {
+      document.getElementById('annualScore').value = data['Annual'].score ?? '';
+      document.getElementById('annualMax').value = data['Annual'].max ?? document.getElementById('annualMax').value || '';
+    } else {
+      document.getElementById('annualScore').value = '';
+    }
+
+    // compute prediction automatically
+    computeAndShowPrediction();
+  } catch (err) {
+    console.error('loadMarksForStudent error', err);
+    alert('Failed to load marks');
+  }
+}
+
+// Save marks inputs to RTDB under marks/{teacherId}/{studentId}/{exam}
+async function saveMarksForStudent(studentId) {
+  const ut1Score = Number(document.getElementById('ut1Score').value || '');
+  const ut1Max = Number(document.getElementById('ut1Max').value || '');
+  const hyScore = Number(document.getElementById('hyScore').value || '');
+  const hyMax = Number(document.getElementById('hyMax').value || '');
+  const ut2Score = document.getElementById('ut2Score').value;
+  const ut2Max = Number(document.getElementById('ut2Max').value || '');
+  const annualScore = document.getElementById('annualScore').value;
+  const annualMax = Number(document.getElementById('annualMax').value || '');
+
+  // write each exam if numbers provided or if user left it blank but predicted values exist, don't auto-save predicted values unless user accepts
+  try {
+    const basePath = `marks/${auth.currentUser.uid}/${studentId}`;
+
+    // UT-1
+    if (!isNaN(ut1Score) && ut1Score !== '') {
+      await set(ref(db, `${basePath}/UT-1`), { score: ut1Score, max: ut1Max || null, timestamp: Date.now() });
+    }
+
+    // Half-Yearly
+    if (!isNaN(hyScore) && hyScore !== '') {
+      await set(ref(db, `${basePath}/Half-Yearly`), { score: hyScore, max: hyMax || null, timestamp: Date.now() });
+    }
+
+    // UT-2 (if teacher entered a value; if empty we do NOT overwrite with prediction)
+    if (ut2Score !== '') {
+      await set(ref(db, `${basePath}/UT-2`), { score: Number(ut2Score), max: ut2Max || null, timestamp: Date.now() });
+    }
+
+    // Annual
+    if (annualScore !== '') {
+      await set(ref(db, `${basePath}/Annual`), { score: Number(annualScore), max: annualMax || null, timestamp: Date.now() });
+    }
+
+    alert('Marks saved successfully');
+  } catch (err) {
+    console.error('saveMarksForStudent error', err);
+    alert('Failed to save marks (check permissions)');
+  }
+}
+
+/* ===========================
+   Prediction algorithm
+   - Simple, explainable linear extrapolation + weighted annual estimate
+   - Explanation shown to teacher
+   =========================== */
+function computeAndShowPrediction() {
+  // read inputs
+  const ut1ScoreRaw = document.getElementById('ut1Score').value;
+  const ut1MaxRaw = document.getElementById('ut1Max').value;
+  const hyScoreRaw = document.getElementById('hyScore').value;
+  const hyMaxRaw = document.getElementById('hyMax').value;
+  const ut2MaxRaw = document.getElementById('ut2Max').value || '25';
+  const annualMaxRaw = document.getElementById('annualMax').value || '100';
+
+  const ut1Score = ut1ScoreRaw === '' ? null : Number(ut1ScoreRaw);
+  const ut1Max = ut1MaxRaw === '' ? null : Number(ut1MaxRaw);
+  const hyScore = hyScoreRaw === '' ? null : Number(hyScoreRaw);
+  const hyMax = hyMaxRaw === '' ? null : Number(hyMaxRaw);
+  const ut2Max = Number(ut2MaxRaw);
+  const annualMax = Number(annualMaxRaw);
+
+  if (ut1Score == null && hyScore == null) {
+    document.getElementById('predictionSummary').innerText = 'Enter UT-1 and/or Half-Yearly marks to compute predictions.';
+    return;
+  }
+
+  // compute percentages (0..1)
+  const ut1Pct = (ut1Score != null && ut1Max > 0) ? (ut1Score / ut1Max) : null;
+  const hyPct = (hyScore != null && hyMax > 0) ? (hyScore / hyMax) : null;
+
+  // Predicted UT-2 percent
+  let predUT2Pct = null;
+  let explanation = '';
+
+  if (ut1Pct != null && hyPct != null) {
+    // linear trend extrapolation: slope = hy - ut1, predict ut2 = hy + slope
+    const slope = hyPct - ut1Pct;
+    predUT2Pct = hyPct + slope;
+    explanation += `Trend: UT-1 ${toPct(ut1Pct)} → Half-Year ${toPct(hyPct)} (slope ${toPct(slope)}). `;
+    explanation += `Extrapolated UT-2 = Half-Year + slope = ${toPct(predUT2Pct)}. `;
+  } else if (hyPct != null) {
+    // only half-year available: assume stable
+    predUT2Pct = hyPct;
+    explanation += `Only Half-Yearly available. Predict UT-2 = Half-Year (${toPct(hyPct)}). `;
+  } else if (ut1Pct != null) {
+    // only ut1 available: assume same level
+    predUT2Pct = ut1Pct;
+    explanation += `Only UT-1 available. Predict UT-2 = UT-1 (${toPct(ut1Pct)}). `;
+  }
+
+  // clamp prediction 0..1
+  predUT2Pct = clamp(predUT2Pct, 0, 1);
+
+  // Annual prediction: weighted combination
+  // weights: UT-1 20%, Half-Year 50%, UT-2 predicted 30% (these are example weights — you can adjust)
+  const w_ut1 = 0.20, w_hy = 0.50, w_ut2 = 0.30;
+  const a_ut1 = ut1Pct != null ? ut1Pct : predUT2Pct; // fallback
+  const a_hy = hyPct != null ? hyPct : predUT2Pct;
+  const annualPct = clamp((w_ut1 * a_ut1) + (w_hy * a_hy) + (w_ut2 * predUT2Pct), 0, 1);
+
+  // convert to scores for displayed maxima
+  const predUT2Score = Math.round(predUT2Pct * ut2Max);
+  const predAnnualScore = Math.round(annualPct * annualMax);
+
+  // confidence heuristics: if slope small -> higher confidence
+  let conf = 0.5;
+  if (ut1Pct != null && hyPct != null) {
+    const slopeAbs = Math.abs(hyPct - ut1Pct);
+    conf = Math.max(0.25, 1 - slopeAbs); // if big slope -> lower confidence
+  } else {
+    conf = 0.6;
+  }
+
+  // show results
+  const summary = [];
+  summary.push(`Predicted UT-2: ${predUT2Score}/${ut2Max} (${toPct(predUT2Pct)})`);
+  summary.push(`Predicted Annual: ${predAnnualScore}/${annualMax} (${toPct(annualPct)})`);
+  summary.push(`Confidence: ${(conf*100).toFixed(0)}%`);
+  summary.push('');
+  summary.push('Explanation: ' + explanation);
+
+  document.getElementById('predictionSummary').innerText = summary.join('\n');
+
+  // prefill UT-2 and Annual inputs with predicted values **but do not save them automatically**
+  const ut2Input = document.getElementById('ut2Score');
+  const annualInput = document.getElementById('annualScore');
+
+  // Only prefill if fields are empty (so teacher can keep their overrides)
+  if (!ut2Input.value) ut2Input.value = predUT2Score;
+  if (!annualInput.value) annualInput.value = predAnnualScore;
+}
+
+// small helpers
+function toPct(x) {
+  if (x == null) return '-';
+  return (x*100).toFixed(1) + '%';
+}
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
