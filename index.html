@@ -16,19 +16,14 @@
     <button id="loginBtn" onclick="login()">Login</button>
     <p class="footer">Developed by Rishu Jaswar</p>
   </div>
-<script>
-window.login=function(){};
-</script>
 
-<script type="module">
-  import './firebase.js';
-  import './script.js';
-</script>
+  <!-- Load Firebase first -->
+  <script type="module" src="./firebase.js"></script>
+
+  <!-- Load main script -->
+  <script type="module" src="./script.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
   <script>eruda.init();</script>
-<script>
-  console.log("INDEX HTML LOADED");
-</script>
 </body>
 </html>
