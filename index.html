@@ -1,32 +1,40 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Login - School Attendance</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login — School Attendance</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container" role="main">
-    <h1>Teacher Login</h1>
-    <label for="email">Email</label>
-    <input id="email" type="email" placeholder="teacher@example.com" />
-    <label for="password">Password</label>
-    <input id="password" type="password" placeholder="••••••••" />
-    <button id="loginBtn" onclick="login()">Login</button>
-    <p class="footer">Developed by Rishu Jaswar</p>
+  <div class="page">
+    <div class="container login-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div>
+          <h2>Teacher Login</h2>
+          <div style="color:var(--muted); font-size:13px;">Sign in with your school account</div>
+        </div>
+        <div class="logo" style="width:42px; height:42px; border-radius:10px;">SA</div>
+      </div>
+
+      <label class="label" for="email">Email</label>
+      <input id="email" type="email" placeholder="teacher@example.com">
+
+      <label class="label" for="password">Password</label>
+      <input id="password" type="password" placeholder="••••••••">
+
+      <button id="loginBtn" onclick="login()" class="btn-cta">Login</button>
+
+      <div style="display:flex; justify-content:space-between; gap:8px; margin-top:12px;">
+        <button class="btn-ghost" onclick="location.href='home.html'">Back</button>
+        <button class="btn-ghost" onclick="alert('Contact admin to create account')">Need account?</button>
+      </div>
+
+      <p class="footer">Developed by Rishu Jaswar</p>
+    </div>
   </div>
-<script>
-window.login=function(){};
-</script>
 
-  <!-- Load Firebase first -->
+  <!-- keep your firebase + script imports so login() works -->
   <script type="module" src="./firebase.js"></script>
-
-  <!-- Load main script -->
   <script type="module" src="./script.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
 </body>
 </html>
