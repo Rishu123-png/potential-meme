@@ -6,28 +6,41 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body onload="initAddStudentsPage()">
-  <div class="container">
-    <div class="row" style="justify-content:space-between;">
-      <h2>Add Student</h2>
-      <button class="small-btn" onclick="logout()">Logout</button>
-    </div>
-    <label>Subject</label>
-    <div id="teacherSubjectAdd" style="margin-bottom:8px;color:var(--muted)"></div>
+  <div class="page">
+    <main class="container">
+      <header class="header">
+        <div class="brand">
+          <div class="logo">SA</div>
+          <div>
+            <h2>Add Student</h2>
+            <p style="color:var(--muted)">Subject: <strong id="teacherSubjectAdd"></strong></p>
+          </div>
+        </div>
 
-    <label for="classSelectAdd">Class</label>
-    <select id="classSelectAdd"></select>
+        <div class="top-controls">
+          <button class="btn-ghost" onclick="location.href='dashboard.html'">Back</button>
+          <button class="btn-ghost" onclick="logout()">Logout</button>
+        </div>
+      </header>
 
-    <label for="studentName">Student Name</label>
-    <input id="studentName" type="text" placeholder="Student Name">
+      <label class="label">Class</label>
+      <select id="classSelectAdd">
+        <option value="">-- Select class --</option>
+      </select>
 
-    <button onclick="addStudent()">Save Student</button>
-    <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+      <label class="label">Student Name</label>
+      <input id="studentName" placeholder="Student name">
 
-    <p class="footer">Developed by Rishu Jaswar</p>
+      <div style="display:flex; gap:12px; margin-top:12px;">
+        <button onclick="addStudent()" class="btn-cta">Save Student</button>
+        <button class="btn-ghost" onclick="location.href='dashboard.html'">Back to Dashboard</button>
+      </div>
+
+      <p class="footer">Developed by Rishu Jaswar</p>
+    </main>
   </div>
-  <script type="module" src="firebase.js"></script>
-  <script type="module" src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
+
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
