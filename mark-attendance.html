@@ -1,89 +1,56 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Mark Attendance</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body onload="initMarkAttendancePage()">
-<div class="container">
+  <div class="page">
+    <main class="container">
+      <header class="header">
+        <div class="brand">
+          <div class="logo">SA</div>
+          <div>
+            <h2 id="pageTitle">Mark Attendance</h2>
+            <p style="color:var(--muted)">Keep accurate daily records</p>
+          </div>
+        </div>
+        <div class="top-controls">
+          <button class="btn-ghost" onclick="logout()">Logout</button>
+        </div>
+      </header>
 
-  <!-- Header -->
-  <div class="row" style="justify-content:space-between;">
-    <h2 id="pageTitle">Mark Attendance</h2>
-    <button class="small-btn" onclick="logout()">Logout</button>
+      <!-- class attendance UI will be rendered by script when selectedClass is set -->
+      <div id="classAttendanceUI" style="display:none; margin-top:6px;"></div>
+
+      <!-- single student UI -->
+      <div id="singleStudentUI" style="display:none; margin-top:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div><strong>Student: </strong><span id="studentNameLabel"></span></div>
+          <div><label for="monthPickerMark" class="label">Month</label><input id="monthPickerMark" type="month"></div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="markAttendanceTable">
+            <thead><tr><th>Date</th><th>Status</th><th>Present</th><th>Absent</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="action-row" style="margin-top:12px;">
+          <button onclick="printReport()">Print Monthly Report</button>
+          <button onclick="exportAttendanceCSV()">Export CSV</button>
+          <button onclick="exportAttendanceExcel()">Export Excel</button>
+          <button class="btn-ghost" onclick="location.href='dashboard.html'">Back</button>
+        </div>
+      </div>
+
+      <p class="footer">Developed by Rishu Jaswar</p>
+    </main>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- 📌 NEW CLASS ATTENDANCE UI (Default-Hidden)               -->
-  <!-- ========================================================= -->
-  <div id="classAttendanceUI" style="display:none; margin-top:10px;">
-
-    <label>Select Class:</label>
-    <select id="classSelect">
-      <option value="">-- Select Class --</option>
-      <option value="11A1">11A1</option>
-      <option value="11A2">11A2</option>
-      <option value="11A3">11A3</option>
-      <option value="12A1">12A1</option>
-      <option value="12A2">12A2</option>
-    </select>
-
-    <button id="loadStudentsBtn" class="small-btn">Load Students</button>
-
-    <div id="studentsContainer" style="margin-top:10px;"></div>
-
-    <button id="saveAttendanceBtn" class="small-btn" style="display:none; margin-top:10px;">
-      Save Attendance
-    </button>
-
-    <p id="statusMsg" style="margin-top:8px; font-weight:bold;"></p>
-
-    <button class="small-btn" style="margin-top:20px;" onclick="window.location.href='dashboard.html'">
-      Back to Dashboard
-    </button>
-  </div>
-
-  <!-- ========================================================= -->
-  <!-- 📌 OLD SINGLE-STUDENT ATTENDANCE UI (Your Old Version)   -->
-  <!-- ========================================================= -->
-  <div id="singleStudentUI" style="display:none;">
-    <div style="margin-top:8px;">
-      <div>Student: <strong id="studentNameLabel"></strong></div>
-      <label for="monthPickerMark">Month</label>
-      <input id="monthPickerMark" type="month" onchange="loadMarkAttendanceMonth()">
-    </div>
-
-    <div class="table" style="margin-top:8px;">
-      <table id="markAttendanceTable">
-        <tr>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Present</th>
-          <th>Absent</th>
-        </tr>
-      </table>
-    </div>
-
-    <div class="row" style="margin-top:12px;">
-      <button onclick="printReport()">Print Monthly Report</button>
-      <button onclick="exportAttendanceCSV()">Export CSV</button>
-      <button onclick="exportAttendanceExcel()">Export Excel</button>
-      <button onclick="window.location.href='dashboard.html'">Back</button>
-    </div>
-  </div>
-
-  <p class="footer">Developed by Rishu Jaswar</p>
-</div>
-
-<!-- Firebase -->
-<script type="module" src="firebase.js"></script>
-
-<!-- Main Script -->
-<script type="module" src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
