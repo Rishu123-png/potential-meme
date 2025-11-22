@@ -2,79 +2,83 @@
 <html>
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Student Marks & Prediction</title>
+  <title>Marks & Prediction</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body onload="initMarksPage()">
-  <div class="container">
-    <div class="row" style="justify-content:space-between; align-items:center;">
-      <h2>Marks & Prediction</h2>
-      <div>
-        <button class="small-btn" onclick="window.location.href='dashboard.html'">Back</button>
-        <button class="small-btn" onclick="logout()">Logout</button>
-      </div>
-    </div>
+  <div class="page">
+    <main class="container">
+      <header class="header">
+        <div class="brand">
+          <div class="logo">SA</div>
+          <div>
+            <h2>Marks & Prediction</h2>
+            <p style="color:var(--muted)">Enter scores and recompute predictions</p>
+          </div>
+        </div>
+        <div class="top-controls">
+          <button class="btn-ghost" onclick="location.href='dashboard.html'">Back</button>
+          <button class="btn-ghost" onclick="logout()">Logout</button>
+        </div>
+      </header>
 
-    <label for="marksStudentSelect">Select Student</label>
-    <select id="marksStudentSelect">
-      <option value="">-- Select student --</option>
-    </select>
+      <label class="label">Select Student</label>
+      <select id="marksStudentSelect"><option value="">-- Select student --</option></select>
 
-    <div id="marksForm" style="margin-top:12px; display:none;">
-      <h3 id="marksStudentName"></h3>
+      <div id="marksForm" style="display:none; margin-top:12px;">
+        <h3 id="marksStudentName"></h3>
 
-      <div class="row" style="gap:12px; flex-wrap:wrap;">
-        <div style="min-width:220px;">
-          <label>UT-1 (score / max)</label>
-          <div style="display:flex; gap:8px;">
-            <input id="ut1Score" type="number" min="0" placeholder="20">
-            <input id="ut1Max" type="number" min="1" placeholder="25">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px;">
+          <div style="flex:1; min-width:210px;">
+            <label class="label">UT-1 (score / max)</label>
+            <div style="display:flex; gap:8px;">
+              <input id="ut1Score" type="number" placeholder="20">
+              <input id="ut1Max" type="number" placeholder="25">
+            </div>
+          </div>
+
+          <div style="flex:1; min-width:210px;">
+            <label class="label">Half-Yearly (score / max)</label>
+            <div style="display:flex; gap:8px;">
+              <input id="hyScore" type="number" placeholder="80">
+              <input id="hyMax" type="number" placeholder="100">
+            </div>
+          </div>
+
+          <div style="flex:1; min-width:210px;">
+            <label class="label">UT-2 (score / max)</label>
+            <div style="display:flex; gap:8px;">
+              <input id="ut2Score" type="number" placeholder="(pred)">
+              <input id="ut2Max" type="number" placeholder="25" value="25">
+            </div>
+          </div>
+
+          <div style="flex:1; min-width:210px;">
+            <label class="label">Annual (score / max)</label>
+            <div style="display:flex; gap:8px;">
+              <input id="annualScore" type="number" placeholder="(pred)">
+              <input id="annualMax" type="number" placeholder="100" value="100">
+            </div>
           </div>
         </div>
 
-        <div style="min-width:220px;">
-          <label>Half-Yearly (score / max)</label>
-          <div style="display:flex; gap:8px;">
-            <input id="hyScore" type="number" min="0" placeholder="80">
-            <input id="hyMax" type="number" min="1" placeholder="100">
-          </div>
+        <div class="action-row" style="margin-top:14px;">
+          <button id="saveMarksBtn">Save Marks</button>
+          <button id="predictBtn">Recompute Prediction</button>
+          <button id="clearMarksBtn" class="btn-ghost">Clear</button>
         </div>
 
-        <div style="min-width:220px;">
-          <label>UT-2 (score / max)</label>
-          <div style="display:flex; gap:8px;">
-            <input id="ut2Score" type="number" min="0" placeholder="(pred)">
-            <input id="ut2Max" type="number" min="1" placeholder="25" value="25">
-          </div>
-        </div>
-
-        <div style="min-width:220px;">
-          <label>Annual (score / max)</label>
-          <div style="display:flex; gap:8px;">
-            <input id="annualScore" type="number" min="0" placeholder="(pred)">
-            <input id="annualMax" type="number" min="1" placeholder="100" value="100">
-          </div>
+        <div style="margin-top:14px;">
+          <h4>Prediction</h4>
+          <pre id="predictionSummary" style="color:var(--muted); white-space:pre-wrap;"></pre>
         </div>
       </div>
 
-      <div style="margin-top:10px;">
-        <button id="saveMarksBtn">Save Marks</button>
-        <button id="predictBtn">Recompute Prediction</button>
-        <button id="clearMarksBtn">Clear</button>
-      </div>
-
-      <div style="margin-top:12px;">
-        <h4>Prediction</h4>
-        <div id="predictionSummary">Enter UT-1 and Half-Yearly to see predictions for UT-2 and Annual.</div>
-      </div>
-    </div>
-
-    <p class="footer">Developed by Rishu Jaswar</p>
+      <p class="footer">Developed by Rishu Jaswar</p>
+    </main>
   </div>
 
-  <script type="module" src="firebase.js"></script>
-  <script type="module" src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script> 
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
