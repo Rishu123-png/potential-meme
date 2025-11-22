@@ -6,29 +6,39 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body onload="initTopBunkersPage()">
-  <div class="container">
-    <div class="row" style="justify-content:space-between;">
-      <h2>Top Bunkers</h2>
-      <button class="small-btn" onclick="logout()">Logout</button>
-    </div>
+  <div class="page">
+    <main class="container">
+      <header class="header">
+        <div class="brand">
+          <div class="logo">SA</div>
+          <div>
+            <h2>Top Bunkers</h2>
+            <p style="color:var(--muted)">Students with highest absences</p>
+          </div>
+        </div>
+        <div class="top-controls">
+          <button class="btn-ghost" onclick="location.href='dashboard.html'">Back</button>
+          <button class="btn-ghost" onclick="logout()">Logout</button>
+        </div>
+      </header>
 
-    <div class="table">
-      <table id="bunkersTable">
-        <tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr>
-      </table>
-    </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table id="bunkersTable">
+            <thead><tr><th>Name</th><th>Class</th><th>Subject</th><th>Absences</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:12px;">
+          <button onclick="exportBunkersCSV()">Export CSV</button>
+        </div>
+      </div>
 
-    <div class="row" style="margin-top:12px;">
-      <button onclick="exportBunkersCSV()">Export CSV</button>
-      <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
-    </div>
-
-    <p class="footer">Developed by Rishu Jaswar</p>
+      <p class="footer">Developed by Rishu Jaswar</p>
+    </main>
   </div>
 
-  <script type="module" src="firebase.js"></script>
-  <script type="module" src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script> 
+  <script type="module" src="./firebase.js"></script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
