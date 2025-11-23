@@ -151,18 +151,14 @@ footer {
   font-size: 14px;
   color: var(--light-text);
 }
-/* ================================
-   LOGO IMAGE SUPPORT (RJ Logo)
-   ================================ */
-
-.brand-logo {
-  height: 46px;
-  width: auto;
-  display: block;
-}
-
 .logo {
-  background: none !important;
-  padding: 0;
-  box-shadow: none !important;
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  background: linear-gradient(135deg,var(--accentA),var(--accentB));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 6px 18px rgba(107,108,255,0.12);
+  font-weight:700;
 }
