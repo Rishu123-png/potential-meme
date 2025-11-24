@@ -1,44 +1,51 @@
 /* ---------------------------------------
-   SIMPLE PHONE UI THEME (merged)
-   --------------------------------------- */
+   MODERN PHONE UI – DARK + TEAL THEME
+   (Clean, professional, no white)
+---------------------------------------- */
 
 /* RESET */
 *{ margin:0; padding:0; box-sizing:border-box; }
 
 :root{
-  --bg: #ffffff;
-  --text: #222;
-  --muted: #777;
-  --primary: #4A6CFF;
-  --success: #28c76f;
+  --bg: #0f1116;
+  --card: #151922;
+  --border: #1f2430;
+
+  --text: #e8e8e8;
+  --muted: #8d95a5;
+
+  --primary: #4C9EFF;   /* blue */
+  --secondary: #26D1B6; /* teal */
   --danger: #ff4c4c;
 
-  --radius: 12px;
+  --radius: 14px;
+
   font-family: "Poppins", sans-serif;
 }
 
-/* BASE PAGE */
+/* BASE */
 html,body{
   background: var(--bg);
   color: var(--text);
 }
 
-/* PAGE CENTER */
+/* PAGE */
 .page{
   min-height:100vh;
   display:flex;
   justify-content:center;
-  padding:20px;
+  padding:16px;
 }
 
-/* MAIN CONTAINER */
+/* CONTAINER */
 .container{
   width:100%;
-  max-width:850px;
-  background:#fff;
-  padding:18px;
+  max-width:860px;
+  background: var(--card);
+  padding:20px;
   border-radius: var(--radius);
-  border:1px solid #eaeaea;
+  border:1px solid var(--border);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
 
 /* HEADER */
@@ -46,84 +53,88 @@ html,body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:14px;
+  margin-bottom:18px;
 }
 
 .brand{
   display:flex;
-  align-items:center;
-  gap:10px;
+  flex-direction:column;
+  gap:2px;
 }
 
-.logo{
-  width:44px;
-  height:44px;
-boarder-radius:10px;
+.brand h2{
+  font-size:20px;
+  font-weight:600;
 }
 
-/* Inputs */
+.brand p{
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* BUTTONS */
+.btn-cta{
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color:#fff;
+  padding:12px;
+  border:none;
+  border-radius:var(--radius);
+  font-weight:600;
+  width:100%;
+  cursor:pointer;
+}
+
+.btn-ghost{
+  background: transparent;
+  border:1px solid var(--border);
+  color:#fff;
+  padding:12px;
+  border-radius:var(--radius);
+}
+
+/* INPUTS */
 input, select{
   width:100%;
   padding:12px;
   border-radius:var(--radius);
-  border:1px solid #dcdcdc;
-  outline:none;
+  background:#0c0e13;
+  border:1px solid #2b3242;
+  color:#fff;
   margin-top:6px;
   font-size:14px;
 }
 
 input:focus, select:focus{
-  border-color: var(--primary);
-}
-
-/* Buttons */
-.btn-cta{
-  background:var(--primary);
-  color:#fff;
-  border:none;
-  padding:12px 14px;
-  border-radius:var(--radius);
-  font-weight:600;
-  width:100%;
-}
-
-.btn-ghost{
-  border:1px solid #ccc;
-  background:#f7f7f7;
-  color:#222;
-  padding:12px;
-  border-radius:var(--radius);
-}
-
-/* Cards */
-.card{
-  background:#fff;
-  padding:16px;
-  border-radius:var(--radius);
-  border:1px solid #ececec;
-  margin-top:12px;
+  border-color: var(--secondary);
 }
 
 /* TABLE */
 .table-wrap{
   overflow:auto;
-  margin-top:16px;
+  margin-top:18px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
   min-width:600px;
+  background: var(--card);
+}
+
+thead th{
+  background:#1c212b;
+  padding:12px;
+  border-bottom:1px solid var(--border);
 }
 
 th,td{
   padding:12px;
-  border-bottom:1px solid #eee;
+  border-bottom:1px solid #1c2029;
 }
 
-thead th{
-  background:#f7f7f7;
-  font-weight:600;
+/* Hover */
+tbody tr:hover td{
+  background:#1a1f28;
 }
 
 /* TABLE BUTTONS */
@@ -135,23 +146,30 @@ thead th{
   cursor:pointer;
 }
 
-.table-btn.primary{ background:var(--primary); color:#fff; }
-.table-btn.danger{ background:var(--danger); color:#fff; }
+.table-btn.primary{
+  background:var(--primary);
+  color:#fff;
+}
+
+.table-btn.danger{
+  background:var(--danger);
+  color:#fff;
+}
 
 /* BADGES */
 .badge{
   padding:6px 8px;
   border-radius:8px;
   font-size:12px;
-  background:#f0f0f0;
-  color:#444;
+  background:#1f2632;
+  color:var(--muted);
 }
 
-/* ATTENDANCE MODAL */
+/* MODAL */
 .modal-overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.45);
+  background:rgba(0,0,0,0.55);
   display:none;
   align-items:center;
   justify-content:center;
@@ -159,22 +177,34 @@ thead th{
 
 .attendance-modal{
   width:92%;
-  max-width:420px;
-  background:#fff;
-  padding:18px;
+  max-width:430px;
+  background:#151922;
+  padding:20px;
   border-radius:var(--radius);
-  border:1px solid #eaeaea;
+  border:1px solid var(--border);
 }
 
-/* PRESENT / ABSENT RADIO DISTANCE */
+/* PRESENT / ABSENT RADIO CELL */
 .status-cell{
   display:flex;
   justify-content:center;
-  gap:18px;  /* change spacing here */
+  gap:18px;
 }
 
 @media(max-width:600px){
   .status-cell{
     gap:12px;
   }
+}
+
+/* ACTION BUTTON ROW */
+.action-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:14px;
+}
+.action-row button{
+  flex:1;
+  min-width:130px;
 }
