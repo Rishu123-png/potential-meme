@@ -475,7 +475,7 @@ async function loadClassAttendanceUI(className) {
   container.innerHTML = `
     <div class="row" style="justify-content:space-between;">
       <h2>Mark Attendance — Class: <span id="classTitle"></span></h2>
-      <button class="small-btn" onclick="logout()">Logout</button>
+      <button class="btn-cta" onclick="logout()">Logout</button>
     </div>
     <div style="margin-top:8px;">
       <div>Class: <strong id="classTitleText"></strong></div>
