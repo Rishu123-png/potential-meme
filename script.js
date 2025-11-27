@@ -1082,3 +1082,83 @@ function drawPerformanceChart(marks) {
     }
   });
 }
+/* ----------------------------------------------
+   REQUIRED DOM REFERENCES (MISSING IN YOUR FILE)
+---------------------------------------------- */
+const ut1Score = document.getElementById("ut1Score");
+const ut1Max = document.getElementById("ut1Max");
+
+const hyScore = document.getElementById("hyScore");
+const hyMax = document.getElementById("hyMax");
+
+const ut2Score = document.getElementById("ut2Score");
+const ut2Max = document.getElementById("ut2Max");
+
+const annualScore = document.getElementById("annualScore");
+const annualMax = document.getElementById("annualMax");
+
+const marksStudentSelect = document.getElementById("marksStudentSelect");
+const predictionSummary = document.getElementById("predictionSummary");
+const studyHourPrediction = document.getElementById("studyHourPrediction");  // ← missing earlier
+
+
+/* ----------------------------------------------
+   FIX: LOAD MARKS PAGE
+---------------------------------------------- */
+export function initMarksPage() {
+  const teacher = JSON.parse(localStorage.getItem("teacherData"));
+  if (!teacher) { window.location.href = "login.html"; return; }
+
+  const studentSelect = marksStudentSelect;
+  const form = document.getElementById("marksForm");
+
+  const classId = teacher.classAssigned;
+  const studentsRef = ref(db, `classes/${classId}/students`);
+
+  onValue(studentsRef, snap => {
+    studentSelect.innerHTML = `<option value="">-- Select student --</option>`;
+    snap.forEach(st => {
+      studentSelect.innerHTML += `<option value="${st.key}">${st.val().name}</option>`;
+    });
+  });
+
+  studentSelect.onchange = () => {
+    const id = studentSelect.value;
+    if (!id) return (form.style.display = "none");
+
+    form.style.display = "block";
+    loadStudentMarks(id);
+  };
+}
+
+
+/* ----------------------------------------------
+   FIX: LOAD STUDENT MARKS
+---------------------------------------------- */
+function loadStudentMarks(studentId) {
+  const teacher = JSON.parse(localStorage.getItem("teacherData"));
+  const classId = teacher.classAssigned;
+
+  const marksRef = ref(db, `classes/${classId}/students/${studentId}/marks`);
+
+  onValue(marksRef, snap => {
+    const d = snap.val() || {};
+
+    document.getElementById("marksStudentName").innerText =
+      d.name || "";
+
+    ut1Score.value = d.ut1Score || "";
+    ut1Max.value = d.ut1Max || "";
+
+    hyScore.value = d.hyScore || "";
+    hyMax.value = d.hyMax || "";
+
+    ut2Score.value = d.ut2Score || "";
+    ut2Max.value = d.ut2Max || "25";
+
+    annualScore.value = d.annualScore || "";
+    annualMax.value = d.annualMax || "100";
+
+    drawPerformanceChart(d);
+  });
+}
