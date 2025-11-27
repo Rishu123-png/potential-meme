@@ -495,6 +495,7 @@ async function loadClassAttendanceUI(className) {
   const html = `
     <div class="row" style="justify-content:space-between;">
       <h2>Mark Attendance — Class: <span id="classTitle"></span></h2>
+<button id="viewClassAnalyticsBtn" class="btn-cta">View Analytics</button>
     </div>
     <div style="margin-top:8px;">
       <div>Class: <strong id="classTitleText"></strong></div>
@@ -503,16 +504,15 @@ async function loadClassAttendanceUI(className) {
         <input id="attendanceDate" type="date" value="${todayDateString()}">
       </div>
     </div>
-    <div class="table-wrap" style="margin-top:10px;">
+    <div class="table-wrap" style="margin-top:12px;">
       <table id="classAttendanceTable">
         <tr><th>Name</th><th>Present</th><th>Absent</th></tr>
       </table>
     </div>
     <div class="row" style="margin-top:8px;">
       <button id="saveClassAttendanceBtn" class="btn-cta">Save Attendance</button>
-      <button id="cancelClassAttendanceBtn" class="btn-cta">Cancel</button>
+      <button id="cancelClassAttendanceBtn" class="btn-cta">Back</button>
       <button id="exportClassCSVBtn" class="btn-cta">Export CSV</button>
-      <button id="viewClassAnalyticsBtn" class="btn-cta">View Analytics</button>
     </div>
   `;
   document.getElementById('classAttendanceUI').innerHTML = html;
