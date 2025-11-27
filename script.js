@@ -1082,21 +1082,3 @@ function drawPerformanceChart(marks) {
     }
   });
 }
-/* ----------------------------------------------
-   REQUIRED DOM REFERENCES (MISSING IN YOUR FILE)
----------------------------------------------- */
-const ut1Score = document.getElementById("ut1Score");
-const ut1Max = document.getElementById("ut1Max");
-
-const hyScore = document.getElementById("hyScore");
-const hyMax = document.getElementById("hyMax");
-
-const ut2Score = document.getElementById("ut2Score");
-const ut2Max = document.getElementById("ut2Max");
-
-const annualScore = document.getElementById("annualScore");
-const annualMax = document.getElementById("annualMax");
-
-const marksStudentSelect = document.getElementById("marksStudentSelect");
-const predictionSummary = document.getElementById("predictionSummary");
-const studyHourPrediction = document.getElementById("studyHourPrediction");  // ← missing earlier
