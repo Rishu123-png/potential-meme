@@ -9,7 +9,7 @@
   <!-- Chart.js for performance chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body onload="window.initMarksPage && initMarksPage()">
+<body>
 <div class="page">
     <main class="container">
      <header class="header">
@@ -117,7 +117,10 @@
   </div>
 
   <script type="module" src="./firebase.js"></script>
-  <script type="module" src="./script.js"></script>
+  <script type="module">
+  import { initMarksPage } from "./script.js";
+  initMarksPage();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
 </body>
