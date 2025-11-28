@@ -907,13 +907,15 @@ function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
    End of merged script
    ====================================================== */
  /* ----------------------------------------------------
-NEW FEATURES FOR MARKS + STUDY HOURS + CHARTS (FINAL FIXED)
+   MARKS PAGE SYSTEM (FINAL MERGED VERSION)
 ---------------------------------------------------- */
 
-/* Load Marks Page */
 export function initMarksPage() {
   const teacher = JSON.parse(localStorage.getItem("teacherData"));
-  if (!teacher) { window.location.href = "login.html"; return; }
+  if (!teacher) { 
+    window.location.href = "login.html"; 
+    return; 
+  }
 
   const studentSelect = document.getElementById("marksStudentSelect");
   const form = document.getElementById("marksForm");
@@ -921,18 +923,18 @@ export function initMarksPage() {
   const classId = teacher.classAssigned;
   const studentsRef = ref(db, `classes/${classId}/students`);
 
-  // Load students list
+  // 🔥 Load students list automatically
   onValue(studentsRef, snap => {
-    studentSelect.innerHTML = `<option value="">-- Select student --</option>`;
+    studentSelect.innerHTML = `<option value="">-- Select Student --</option>`;
     snap.forEach(st => {
-      studentSelect.innerHTML += `<option value="${st.key}">${st.val().name}</option>`;
+      const data = st.val();
+      studentSelect.innerHTML += `<option value="${st.key}">${data.name}</option>`;
     });
   });
 
   studentSelect.onchange = () => {
     const id = studentSelect.value;
     if (!id) return (form.style.display = "none");
-
     form.style.display = "block";
     loadStudentMarks(id);
   };
@@ -940,9 +942,10 @@ export function initMarksPage() {
   document.getElementById("saveMarksBtn").onclick = saveMarks;
   document.getElementById("predictBtn").onclick = recomputePrediction;
   document.getElementById("clearMarksBtn").onclick = clearMarks;
+  document.getElementById("studyPredictBtn").onclick = predictStudyHourMarks;
 }
 
-/* Load existing stored marks */
+/* ------------ LOAD MARKS + STUDENT NAME ------------ */
 function loadStudentMarks(studentId) {
   const teacher = JSON.parse(localStorage.getItem("teacherData"));
   const classId = teacher.classAssigned;
@@ -950,15 +953,15 @@ function loadStudentMarks(studentId) {
   const studentRef = ref(db, `classes/${classId}/students/${studentId}`);
   const marksRef = ref(db, `classes/${classId}/students/${studentId}/marks`);
 
-  // Load student NAME from RTDB (correct)
+  // Load Student Name
   onValue(studentRef, snap => {
-    const stu = snap.val();
-    if (stu && stu.name) {
+    if (snap.exists()) {
+      const stu = snap.val();
       document.getElementById("marksStudentName").innerText = stu.name;
     }
   });
 
-  // Load marks
+  // Load Saved Marks
   onValue(marksRef, snap => {
     const d = snap.val() || {};
 
@@ -975,13 +978,13 @@ function loadStudentMarks(studentId) {
   });
 }
 
-/* SAVE MARKS (No name stored) */
+/* ------------------- SAVE MARKS -------------------- */
 function saveMarks() {
   const studentId = marksStudentSelect.value;
   const teacher = JSON.parse(localStorage.getItem("teacherData"));
   const classId = teacher.classAssigned;
 
-  if (!studentId) return alert("Select a student first");
+  if (!studentId) return alert("Select a student first.");
 
   const data = {
     ut1Score: ut1Score.value,
@@ -999,7 +1002,7 @@ function saveMarks() {
     .catch(err => alert(err));
 }
 
-/* CLEAR MARKS INPUTS */
+/* ------------------ CLEAR INPUTS ------------------- */
 function clearMarks() {
   ut1Score.value = "";
   ut1Max.value = "";
@@ -1012,68 +1015,67 @@ function clearMarks() {
   predictionSummary.innerText = "";
 }
 
-/* PREDICT MARKS */
+/* ------------------ PREDICT MARKS ------------------ */
 function recomputePrediction() {
   const ut1 = Number(ut1Score.value);
   const hy = Number(hyScore.value);
 
   if (!ut1 || !hy) {
-    predictionSummary.innerText = "Enter UT-1 & Half-Yearly to compute prediction.";
+    predictionSummary.innerText = "Enter UT-1 & Half-Yearly first.";
     return;
   }
 
-  const predictedUT2 = Math.round((ut1 * 0.4) + (hy * 0.6));
-  const predictedAnnual = Math.round((hy * 0.5) + (predictedUT2 * 0.5));
-
-  predictionSummary.innerText =
-    `Predicted UT-2: ${predictedUT2}\nPredicted Annual: ${predictedAnnual}`;
+  const predictedUT2 = Math.round(ut1 * 0.4 + hy * 0.6);
+  const predictedAnnual = Math.round(hy * 0.5 + predictedUT2 * 0.5);
 
   ut2Score.value = predictedUT2;
   annualScore.value = predictedAnnual;
+
+  predictionSummary.innerText =
+    `Predicted UT-2: ${predictedUT2}\nPredicted Annual: ${predictedAnnual}`;
 }
 
-/* STUDY HOURS → SCORE */
+/* ----------- STUDY HOURS → SCORE ESTIMATE ---------- */
 function predictStudyHourMarks() {
   const hours = Number(document.getElementById("studyHours").value);
 
   if (!hours) {
-    studyHourPrediction.innerText = "Enter valid study hours.";
+    studyHourPrediction.innerText = "Enter study hours.";
     return;
   }
 
   let predicted = Math.min(100, Math.round(hours * 7));
   let category = "Average";
+
   if (predicted > 85) category = "Topper";
   else if (predicted < 40) category = "Failer";
 
   studyHourPrediction.innerText =
-    `Estimated Score: ${predicted}/100\nPerformance: ${category}`;
+    `Estimated Score: ${predicted}/100\nStatus: ${category}`;
 }
 
-/* PERFORMANCE CHART */
+/* ------------------- CHART SYSTEM ------------------ */
 let chartInstance = null;
 
 function drawPerformanceChart(marks) {
   const ctx = document.getElementById("performanceChart").getContext("2d");
 
-  const data = [
+  const scores = [
     Number(marks.ut1Score || 0),
     Number(marks.hyScore || 0),
     Number(marks.ut2Score || 0),
     Number(marks.annualScore || 0)
   ];
 
-  const labels = ["UT-1", "Half-Yearly", "UT-2", "Annual"];
-
   if (chartInstance) chartInstance.destroy();
 
   chartInstance = new Chart(ctx, {
     type: "line",
     data: {
-      labels,
+      labels: ["UT-1", "Half-Yearly", "UT-2", "Annual"],
       datasets: [{
-        label: "Performance",
-        data,
+        label: "Performance Trend",
+        data: scores,
         borderWidth: 2,
         tension: 0.4
       }]
@@ -1081,7 +1083,7 @@ function drawPerformanceChart(marks) {
   });
 }
 
-/* DOM REFERENCES */
+/* ---------------- DOM REFERENCES ------------------- */
 const ut1Score = document.getElementById("ut1Score");
 const ut1Max = document.getElementById("ut1Max");
 const hyScore = document.getElementById("hyScore");
@@ -1093,8 +1095,3 @@ const annualMax = document.getElementById("annualMax");
 
 const marksStudentSelect = document.getElementById("marksStudentSelect");
 const predictionSummary = document.getElementById("predictionSummary");
-
-/* CHECK NAME FIELD */
-if (!document.getElementById("marksStudentName")) {
-  console.warn("⚠ Element #marksStudentName is missing in HTML!");
-}
