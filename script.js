@@ -906,8 +906,8 @@ function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 /* ======================================================
    End of merged script
    ====================================================== */
-/* ----------------------------------------------------
-NEW FEATURES FOR MARKS + STUDY HOURS + CHARTS (FIXED)
+ /* ----------------------------------------------------
+NEW FEATURES FOR MARKS + STUDY HOURS + CHARTS (FINAL FIXED)
 ---------------------------------------------------- */
 
 /* Load Marks Page */
@@ -918,10 +918,10 @@ export function initMarksPage() {
   const studentSelect = document.getElementById("marksStudentSelect");
   const form = document.getElementById("marksForm");
 
-  // Load students from RTDB
   const classId = teacher.classAssigned;
   const studentsRef = ref(db, `classes/${classId}/students`);
 
+  // Load students list
   onValue(studentsRef, snap => {
     studentSelect.innerHTML = `<option value="">-- Select student --</option>`;
     snap.forEach(st => {
@@ -947,16 +947,21 @@ function loadStudentMarks(studentId) {
   const teacher = JSON.parse(localStorage.getItem("teacherData"));
   const classId = teacher.classAssigned;
 
+  const studentRef = ref(db, `classes/${classId}/students/${studentId}`);
   const marksRef = ref(db, `classes/${classId}/students/${studentId}/marks`);
 
+  // Load student NAME from RTDB (correct)
+  onValue(studentRef, snap => {
+    const stu = snap.val();
+    if (stu && stu.name) {
+      document.getElementById("marksStudentName").innerText = stu.name;
+    }
+  });
+
+  // Load marks
   onValue(marksRef, snap => {
     const d = snap.val() || {};
 
-    // student name fix
-    document.getElementById("marksStudentName").innerText =
-      d.name || "";
-
-    // Fill input fields
     ut1Score.value = d.ut1Score || "";
     ut1Max.value = d.ut1Max || "";
     hyScore.value = d.hyScore || "";
@@ -970,7 +975,7 @@ function loadStudentMarks(studentId) {
   });
 }
 
-/* SAVE MARKS */
+/* SAVE MARKS (No name stored) */
 function saveMarks() {
   const studentId = marksStudentSelect.value;
   const teacher = JSON.parse(localStorage.getItem("teacherData"));
@@ -979,7 +984,6 @@ function saveMarks() {
   if (!studentId) return alert("Select a student first");
 
   const data = {
-    name: document.getElementById("marksStudentName").innerText,
     ut1Score: ut1Score.value,
     ut1Max: ut1Max.value,
     hyScore: hyScore.value,
@@ -995,7 +999,7 @@ function saveMarks() {
     .catch(err => alert(err));
 }
 
-/* CLEAR FIELDS */
+/* CLEAR MARKS INPUTS */
 function clearMarks() {
   ut1Score.value = "";
   ut1Max.value = "";
@@ -1028,7 +1032,7 @@ function recomputePrediction() {
   annualScore.value = predictedAnnual;
 }
 
-/* STUDY HOURS → MARKS */
+/* STUDY HOURS → SCORE */
 function predictStudyHourMarks() {
   const hours = Number(document.getElementById("studyHours").value);
 
@@ -1077,23 +1081,20 @@ function drawPerformanceChart(marks) {
   });
 }
 
-/* DOM REFERENCES (Fix required missing vars) */
+/* DOM REFERENCES */
 const ut1Score = document.getElementById("ut1Score");
 const ut1Max = document.getElementById("ut1Max");
-
 const hyScore = document.getElementById("hyScore");
 const hyMax = document.getElementById("hyMax");
-
 const ut2Score = document.getElementById("ut2Score");
 const ut2Max = document.getElementById("ut2Max");
-
 const annualScore = document.getElementById("annualScore");
 const annualMax = document.getElementById("annualMax");
 
 const marksStudentSelect = document.getElementById("marksStudentSelect");
 const predictionSummary = document.getElementById("predictionSummary");
 
-/* ENSURE STUDENT NAME FIELD EXISTS */
+/* CHECK NAME FIELD */
 if (!document.getElementById("marksStudentName")) {
   console.warn("⚠ Element #marksStudentName is missing in HTML!");
 }
