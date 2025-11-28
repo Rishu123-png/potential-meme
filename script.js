@@ -907,186 +907,177 @@ function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
    End of merged script
    ====================================================== */
 /* ----------------------------------------------------
-NEW FEATURES FOR MARKS + STUDY HOURS + CHARTS
+NEW FEATURES FOR MARKS + STUDY HOURS + CHARTS (FIXED)
 ---------------------------------------------------- */
 
 /* Load Marks Page */
 export function initMarksPage() {
-const teacher = JSON.parse(localStorage.getItem("teacherData"));
-if (!teacher) { window.location.href = "login.html"; return; }
+  const teacher = JSON.parse(localStorage.getItem("teacherData"));
+  if (!teacher) { window.location.href = "login.html"; return; }
 
-const studentSelect = document.getElementById("marksStudentSelect");
-const form = document.getElementById("marksForm");
+  const studentSelect = document.getElementById("marksStudentSelect");
+  const form = document.getElementById("marksForm");
 
-// Load students from RTDB
-const classId = teacher.classAssigned;
-const studentsRef = ref(db, classes/${classId}/students);
+  // Load students from RTDB
+  const classId = teacher.classAssigned;
+  const studentsRef = ref(db, `classes/${classId}/students`);
 
-onValue(studentsRef, snap => {
-studentSelect.innerHTML = <option value="">-- Select student --</option>;
-snap.forEach(st => {
-studentSelect.innerHTML += <option value="${st.key}">${st.val().name}</option>;
-});
-});
+  onValue(studentsRef, snap => {
+    studentSelect.innerHTML = `<option value="">-- Select student --</option>`;
+    snap.forEach(st => {
+      studentSelect.innerHTML += `<option value="${st.key}">${st.val().name}</option>`;
+    });
+  });
 
-studentSelect.onchange = () => {
-const id = studentSelect.value;
-if (!id) return (form.style.display = "none");
+  studentSelect.onchange = () => {
+    const id = studentSelect.value;
+    if (!id) return (form.style.display = "none");
 
-form.style.display = "block";  
-loadStudentMarks(id);
+    form.style.display = "block";
+    loadStudentMarks(id);
+  };
 
-};
-
-document.getElementById("saveMarksBtn").onclick = saveMarks;
-document.getElementById("predictBtn").onclick = recomputePrediction;
-document.getElementById("clearMarksBtn").onclick = clearMarks;
+  document.getElementById("saveMarksBtn").onclick = saveMarks;
+  document.getElementById("predictBtn").onclick = recomputePrediction;
+  document.getElementById("clearMarksBtn").onclick = clearMarks;
 }
 
 /* Load existing stored marks */
 function loadStudentMarks(studentId) {
-const teacher = JSON.parse(localStorage.getItem("teacherData"));
-const classId = teacher.classAssigned;
+  const teacher = JSON.parse(localStorage.getItem("teacherData"));
+  const classId = teacher.classAssigned;
 
-const marksRef = ref(db, classes/${classId}/students/${studentId}/marks);
+  const marksRef = ref(db, `classes/${classId}/students/${studentId}/marks`);
 
-onValue(marksRef, snap => {
-const d = snap.val() || {};
+  onValue(marksRef, snap => {
+    const d = snap.val() || {};
 
-document.getElementById("marksStudentName").innerText =  
-  d.name || "";  
+    // student name fix
+    document.getElementById("marksStudentName").innerText =
+      d.name || "";
 
-// Fill fields  
-ut1Score.value = d.ut1Score || "";  
-ut1Max.value = d.ut1Max || "";  
-hyScore.value = d.hyScore || "";  
-hyMax.value = d.hyMax || "";  
-ut2Score.value = d.ut2Score || "";  
-ut2Max.value = d.ut2Max || "25";  
-annualScore.value = d.annualScore || "";  
-annualMax.value = d.annualMax || "100";  
+    // Fill input fields
+    ut1Score.value = d.ut1Score || "";
+    ut1Max.value = d.ut1Max || "";
+    hyScore.value = d.hyScore || "";
+    hyMax.value = d.hyMax || "";
+    ut2Score.value = d.ut2Score || "";
+    ut2Max.value = d.ut2Max || "25";
+    annualScore.value = d.annualScore || "";
+    annualMax.value = d.annualMax || "100";
 
-drawPerformanceChart(d);
-
-});
+    drawPerformanceChart(d);
+  });
 }
 
 /* SAVE MARKS */
 function saveMarks() {
-const studentId = marksStudentSelect.value;
-const teacher = JSON.parse(localStorage.getItem("teacherData"));
-const classId = teacher.classAssigned;
+  const studentId = marksStudentSelect.value;
+  const teacher = JSON.parse(localStorage.getItem("teacherData"));
+  const classId = teacher.classAssigned;
 
-if (!studentId) return alert("Select a student first");
+  if (!studentId) return alert("Select a student first");
 
-const data = {
-name: document.getElementById("marksStudentName").innerText,
-ut1Score: ut1Score.value,
-ut1Max: ut1Max.value,
-hyScore: hyScore.value,
-hyMax: hyMax.value,
-ut2Score: ut2Score.value,
-ut2Max: ut2Max.value,
-annualScore: annualScore.value,
-annualMax: annualMax.value
-};
+  const data = {
+    name: document.getElementById("marksStudentName").innerText,
+    ut1Score: ut1Score.value,
+    ut1Max: ut1Max.value,
+    hyScore: hyScore.value,
+    hyMax: hyMax.value,
+    ut2Score: ut2Score.value,
+    ut2Max: ut2Max.value,
+    annualScore: annualScore.value,
+    annualMax: annualMax.value
+  };
 
-update(ref(db, classes/${classId}/students/${studentId}/marks), data)
-.then(() => alert("Marks saved successfully!"))
-.catch(err => alert(err));
+  update(ref(db, `classes/${classId}/students/${studentId}/marks`), data)
+    .then(() => alert("Marks saved successfully!"))
+    .catch(err => alert(err));
 }
 
 /* CLEAR FIELDS */
 function clearMarks() {
-ut1Score.value = "";
-ut1Max.value = "";
-hyScore.value = "";
-hyMax.value = "";
-ut2Score.value = "";
-ut2Max.value = "25";
-annualScore.value = "";
-annualMax.value = "100";
-predictionSummary.innerText = "";
+  ut1Score.value = "";
+  ut1Max.value = "";
+  hyScore.value = "";
+  hyMax.value = "";
+  ut2Score.value = "";
+  ut2Max.value = "25";
+  annualScore.value = "";
+  annualMax.value = "100";
+  predictionSummary.innerText = "";
 }
 
-/* PREDICT MARKS BASED ON ENTERED SCORES */
+/* PREDICT MARKS */
 function recomputePrediction() {
-const ut1 = Number(ut1Score.value);
-const hy = Number(hyScore.value);
+  const ut1 = Number(ut1Score.value);
+  const hy = Number(hyScore.value);
 
-if (!ut1 || !hy) {
-predictionSummary.innerText = "Enter UT-1 & Half-Yearly to compute prediction.";
-return;
+  if (!ut1 || !hy) {
+    predictionSummary.innerText = "Enter UT-1 & Half-Yearly to compute prediction.";
+    return;
+  }
+
+  const predictedUT2 = Math.round((ut1 * 0.4) + (hy * 0.6));
+  const predictedAnnual = Math.round((hy * 0.5) + (predictedUT2 * 0.5));
+
+  predictionSummary.innerText =
+    `Predicted UT-2: ${predictedUT2}\nPredicted Annual: ${predictedAnnual}`;
+
+  ut2Score.value = predictedUT2;
+  annualScore.value = predictedAnnual;
 }
 
-// Simple weighted model
-const predictedUT2 = Math.round((ut1 * 0.4) + (hy * 0.6));
-const predictedAnnual = Math.round((hy * 0.5) + (predictedUT2 * 0.5));
-
-predictionSummary.innerText =
-Predicted UT-2: ${predictedUT2}\nPredicted Annual: ${predictedAnnual};
-
-ut2Score.value = predictedUT2;
-annualScore.value = predictedAnnual;
-}
-
-/* ----------------------------------------------------
-STUDY HOURS -> PREDICTED MARKS
----------------------------------------------------- */
+/* STUDY HOURS → MARKS */
 function predictStudyHourMarks() {
-const hours = Number(document.getElementById("studyHours").value);
+  const hours = Number(document.getElementById("studyHours").value);
 
-if (!hours) {
-studyHourPrediction.innerText = "Enter valid study hours.";
-return;
+  if (!hours) {
+    studyHourPrediction.innerText = "Enter valid study hours.";
+    return;
+  }
+
+  let predicted = Math.min(100, Math.round(hours * 7));
+  let category = "Average";
+  if (predicted > 85) category = "Topper";
+  else if (predicted < 40) category = "Failer";
+
+  studyHourPrediction.innerText =
+    `Estimated Score: ${predicted}/100\nPerformance: ${category}`;
 }
 
-// Formula = hours × 7 (max 100)
-let predicted = Math.min(100, Math.round(hours * 7));
-
-let category = "Average";
-if (predicted > 85) category = "Topper";
-else if (predicted < 40) category = "Failer";
-
-studyHourPrediction.innerText =
-Estimated Score: ${predicted}/100\nPerformance: ${category};
-}
-
-/* ----------------------------------------------------
-STUDENT PERFORMANCE CHART (Chart.js)
----------------------------------------------------- */
+/* PERFORMANCE CHART */
 let chartInstance = null;
 
 function drawPerformanceChart(marks) {
-const ctx = document.getElementById("performanceChart").getContext("2d");
+  const ctx = document.getElementById("performanceChart").getContext("2d");
 
-const data = [
-Number(marks.ut1Score || 0),
-Number(marks.hyScore || 0),
-Number(marks.ut2Score || 0),
-Number(marks.annualScore || 0)
-];
+  const data = [
+    Number(marks.ut1Score || 0),
+    Number(marks.hyScore || 0),
+    Number(marks.ut2Score || 0),
+    Number(marks.annualScore || 0)
+  ];
 
-const labels = ["UT-1", "Half-Yearly", "UT-2", "Annual"];
+  const labels = ["UT-1", "Half-Yearly", "UT-2", "Annual"];
 
-if (chartInstance) chartInstance.destroy();
+  if (chartInstance) chartInstance.destroy();
 
-chartInstance = new Chart(ctx, {
-type: "line",
-data: {
-labels,
-datasets: [{
-label: "Performance",
-data,
-borderWidth: 2,
-tension: 0.4
-}]
+  chartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Performance",
+        data,
+        borderWidth: 2,
+        tension: 0.4
+      }]
+    }
+  });
 }
-});
-}
-/* ----------------------------------------------
-   REQUIRED DOM REFERENCES (FIX FOR MISSING VARS)
----------------------------------------------- */
+
+/* DOM REFERENCES (Fix required missing vars) */
 const ut1Score = document.getElementById("ut1Score");
 const ut1Max = document.getElementById("ut1Max");
 
@@ -1102,9 +1093,7 @@ const annualMax = document.getElementById("annualMax");
 const marksStudentSelect = document.getElementById("marksStudentSelect");
 const predictionSummary = document.getElementById("predictionSummary");
 
-/* ----------------------------------------------
-   FIX: ENSURE STUDENT NAME FIELD EXISTS
----------------------------------------------- */
+/* ENSURE STUDENT NAME FIELD EXISTS */
 if (!document.getElementById("marksStudentName")) {
   console.warn("⚠ Element #marksStudentName is missing in HTML!");
 }
