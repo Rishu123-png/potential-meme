@@ -1,7 +1,7 @@
 // marks.js
 import { auth, db } from "./firebase.js";
 import { ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
-import { getCurrentUser, waitForAuth } from "./global.js";
+import { getCurrentUser, waitForAuth } from "./script.js";
 
 
 let chartInstance = null;
