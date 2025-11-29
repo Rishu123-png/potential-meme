@@ -1,7 +1,7 @@
 // students.js
 import { auth, db } from "./firebase.js";
 import { push, set, ref, get } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
-import { waitForAuth } from "./global.js";
+import { waitForAuth } from "./script.js";
 
 export function initAddStudentsPage() {
   waitForAuth(() => {
