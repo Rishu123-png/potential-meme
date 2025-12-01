@@ -268,20 +268,30 @@ function recomputePrediction() {
 
   
 
-/* ----------------- Study hours prediction ------------------ */
+/* ----------------- Realistic Study hours prediction ------------------ */
 function predictStudyHourMarks() {
-  const hours = Number(studyHoursInput?.value || 0);
-  if (!hours) {
-    if (studyHourPrediction) studyHourPrediction.innerText = "Enter study hours.";
+  const hours = Number(studyHoursInput?.value);
+
+  if (isNaN(hours) || hours <= 0) {
+    if (studyHourPrediction) studyHourPrediction.innerText = "Enter valid study hours.";
     return;
   }
-  let predicted = Math.min(100, Math.round(hours * 3));
-  let category = "Average";
-  if (predicted > 8) category = "Topper";
-  else if (predicted < 2) category = "Failer";
-  if (studyHourPrediction) studyHourPrediction.innerText = `Estimated Score: ${predicted}/100\nStatus: ${category}`;
-}
 
+  // Realistic prediction formula (curved for diminishing returns)
+  // Max marks = 100, assuming 0–12 study hours
+  let predicted = Math.round((hours / 12) * 100);
+  predicted = Math.min(100, predicted);
+
+  // Determine category
+  let category = "";
+  if (predicted >= 80) category = "Topper";
+  else if (predicted >= 50) category = "Average";
+  else category = "Failer";
+
+  if (studyHourPrediction) {
+    studyHourPrediction.innerText = `Estimated Score: ${predicted}/100\nStatus: ${category}`;
+  }
+}
 /* ----------------- Chart ------------------ */
 function drawPerformanceChart(marks) {
   if (!performanceCanvas) return;
