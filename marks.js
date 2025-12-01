@@ -175,9 +175,9 @@ async function loadStudentMarks(studentId) {
 
     // Fill inputs (if exist)
     if (ut1Score) ut1Score.value = tryGet(() => d.ut1Score ?? "", "");
-    if (ut1Max) ut1Max.value = tryGet(() => d.ut1Max ?? "", "");
+    if (ut1Max) ut1Max.value = tryGet(() => d.ut1Max ?? "25", "25");
     if (hyScore) hyScore.value = tryGet(() => d.hyScore ?? "", "");
-    if (hyMax) hyMax.value = tryGet(() => d.hyMax ?? "", "");
+    if (hyMax) hyMax.value = tryGet(() => d.hyMax ?? "100", "100");
     if (ut2Score) ut2Score.value = tryGet(() => d.ut2Score ?? "", "");
     if (ut2Max) ut2Max.value = tryGet(() => (d.ut2Max ?? "25"), "25");
     if (annualScore) annualScore.value = tryGet(() => d.annualScore ?? "", "");
@@ -204,9 +204,9 @@ async function handleSaveMarks() {
   // read values safely
   const payload = {
     ut1Score: (ut1Score?.value || "").toString(),
-    ut1Max: (ut1Max?.value || "").toString(),
+    ut1Max: (ut1Max?.value || "25").toString(),
     hyScore: (hyScore?.value || "").toString(),
-    hyMax: (hyMax?.value || "").toString(),
+    hyMax: (hyMax?.value || "100").toString(),
     ut2Score: (ut2Score?.value || "").toString(),
     ut2Max: (ut2Max?.value || "25").toString(),
     annualScore: (annualScore?.value || "").toString(),
@@ -226,9 +226,9 @@ async function handleSaveMarks() {
 /* ----------------- Clear inputs ------------------ */
 function clearMarks() {
   if (ut1Score) ut1Score.value = "";
-  if (ut1Max) ut1Max.value = "";
+  if (ut1Max) ut1Max.value = "25";
   if (hyScore) hyScore.value = "";
-  if (hyMax) hyMax.value = "";
+  if (hyMax) hyMax.value = "100";
   if (ut2Score) ut2Score.value = "";
   if (ut2Max) ut2Max.value = "25";
   if (annualScore) annualScore.value = "";
